@@ -1,27 +1,50 @@
-# Clawbound
+# Clawbound · The Sunken Vault
 
-A mobile-first browser roguelike built around a claw machine. Formerly Claw Rogue.
+A complete, dependency-free browser roguelike built around a physical claw machine.
 
 **Play:** https://roxorloops1337.github.io/claw-rogue/
 
-Your robot fights at the top of the screen while you scoop items from the machine below. Drag across the glass or hold the arrow buttons to aim; press Grab to collect up to five items in one scoop. Keyboard controls are A/D or arrows, Space to grab, Escape to pause.
+Drag the glass or hold the arrow buttons to aim. Press Grab to scoop. Keyboard: A/D or arrows, Space to grab, Escape to pause. Only treasures that fall through the left delivery chute apply their effects. Sound can be toggled in the header.
 
-## Loot and progression
+## The expedition
 
-- Swords deal 4 damage, sparks deal 6, and scrap deals 1.
-- Shields add 4 block; hearts restore 3 health.
-- Coins buy extra drops when you run out.
-- Clear a floor to choose an upgrade. Bigger claws widen the scoop and increase capacity. Other upgrades improve damage, shields, health, or the number of drops.
-- Ten floors, with bosses on floors 5 and 10.
+- Twelve chambers across the Verdant Works, Prism Mines, and Astral Vault, with guardians in chambers 4, 8, and 12.
+- Enemies telegraph strikes, heavy attacks, armour, and repairs before each drop.
+- Choose capped upgrades after victories. Elite routes grant two upgrades and extra coins.
+- Choose roads, elite treasuries, sanctuaries, and merchants between chambers.
+- Spend coins on repairs, upgrades, or emergency drops. Build around swords, sparks, shields, healing, scrap, or large hauls.
+- Win or retire an expedition to bank embers for permanent workshop improvements. Unlock Warden and Stormsmith loadouts through play.
+- Full run state—including moving loot and the claw—is saved automatically on this device. Continue from the title screen. Saves use browser storage; clearing site data removes them.
 
-## Run locally
+## Physics and art
 
-Open `index.html` in a modern browser. No build step or external dependencies. All illustrations are drawn on canvas. The layout adapts to phone height and includes safe-area padding.
+Free circle bodies collide with articulated moving capsule jaws. Contact impulses, friction, spin, and gravity carry the load; items are never attached to an invisible basket. Floor contact supports natural rolling. Widening the claw changes its geometry, while grip upgrades change contact friction. The mobile canvas keeps its aspect ratio so balls remain circular.
 
-## Physics
+Original resolution-independent canvas art includes a brass/enamel salvager, illustrated creatures, distinct guardian details, and three dungeon palettes. Procedural sound has no network dependencies.
 
-The pile uses circle collisions and gravity. The articulated claw pushes items as it descends and closes. Capture is determined geometrically within its scoop and limited by capacity; captured items continue colliding inside the carrying area. This is an arcade simulation, not a full rigid-body gripping solver.
+Inspired by the author's [Claw Crawl](https://games-71g.pages.dev/claw_crawl/).
 
-## Validation
+## Development and verification
 
-Checked syntax, pile containment, 16 full grab cycles, mixed five-item combat effects, room progression, claw upgrades, pause, defeat/restart, and purchasing extra drops. Best floor is saved locally; in-progress runs are not persisted.
+No build step. Serve the directory with `python3 -m http.server`.
+
+- `game.js`: controls, campaign integration, combat, menus, audio, saving, frame loop
+- `physics.js`: sequential contact impulse solver
+- `progression.js`: campaign data, upgrades, economy, validated persistence
+- `art.js`: canvas artwork
+- `styles.css`: responsive layout
+- `tests/mobile.html`: phone-size browser preview
+
+Run:
+
+```sh
+node tests/physics.test.cjs
+node tests/progression.test.cjs
+node tests/game.test.cjs
+node tests/campaign.test.cjs
+node tests/balance.cjs
+```
+
+Physics tests cover rolling, free release, actual moving-surface carry, pile stability, and chute/divider collisions. Integration checks cover physical grabs, empty grabs, pause, full campaign transitions, elite rewards, shops, armour, repairs, victory, and reloading mid-grab. Persistence tests cover malformed saves, quota errors, upgrade caps, unlocks, and duplicate reward prevention.
+
+The campaign transition test injects defeats to isolate progression logic; the balance script runs actual physical grabs. Automated checks and desktop phone-size previews do not replace testing on physical Android and iOS devices.
