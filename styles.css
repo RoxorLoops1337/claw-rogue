@@ -8,3 +8,7 @@ dialog{background:radial-gradient(ellipse at 50% 0,#36524b44,transparent 60%),#1
 @media(max-height:580px){.app{height:auto;min-height:100dvh;overflow:visible}.machine{width:min(100%,300px)}.battle{flex:none;height:118px}.hint{display:none}}
 @media(max-width:360px){.app{padding-left:9px;padding-right:9px}.brand{font-size:15px;gap:4px}.brand span{width:21px}.top-actions{gap:4px}.icon-button{width:29px;height:30px}.coin-counter{padding:5px 6px;font-size:11px}.controls{grid-template-columns:51px 1fr 51px}.route-dots{gap:2px}.fighter-labels{gap:23px}.route #zone{letter-spacing:.4px}.modal-title{font-size:25px}}
 @media(prefers-reduced-motion:reduce){.flash{animation:none}.health-line .bar i,.choice{transition:none}}
+/* Keep the action controls above the fold on compact phones. */
+@media(max-height:740px) and (min-height:581px){.machine{width:min(100%,calc((100dvh - 388px)*1.2353 + 16px))}}
+@media(max-height:580px) and (max-width:599px){.app{height:100dvh;min-height:0;overflow:auto}.battle{height:105px;min-height:105px;max-height:105px}.machine{width:min(100%,calc((100dvh - 350px)*1.2353 + 16px))}}
+@media(max-height:450px) and (orientation:landscape){.app{height:auto;min-height:100dvh}.machine{width:300px}.battle{height:118px}}
