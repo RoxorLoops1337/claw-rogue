@@ -3,9 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#101724">
+<meta name="theme-color" content="#101f23">
+<meta name="description" content="A physical claw-machine roguelike. Scoop your weapons, build your salvager, and conquer the Sunken Vault.">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>Clawbound · Pocket Roguelike</title>
+<title>Clawbound · The Sunken Vault</title>
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="manifest" href="manifest.webmanifest">
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -16,10 +19,11 @@
 <div class="status" id="status" role="status" aria-live="polite">Slide to aim. Scoop a handful.</div>
 <section class="machine" aria-label="Claw machine"><div class="machine-top"><div class="machine-title"><i class="led"></i>LOOT CHAMBER</div><div class="machine-stat"><b id="drops">6</b> DROPS LEFT</div></div><div class="glass"><canvas id="machineCanvas" aria-label="Drag to aim the claw, then press Grab"></canvas></div><div class="machine-foot"><span id="clawLabel">STANDARD CLAW</span><div class="capacity" id="capacity" aria-label="Claw capacity: 5"></div><span id="load">0 / 5</span></div></section>
 <div class="controls"><button class="move" id="left" aria-label="Move claw left"><svg viewBox="0 0 24 24"><path d="M16 4 6 12l10 8z"/></svg></button><button class="drop" id="drop"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2v6m-3 0h6M9 8 5 15l3 5 3-2m4-10 4 7-3 5-3-2"/></svg><span id="dropLabel">GRAB</span></button><button class="move" id="right" aria-label="Move claw right"><svg viewBox="0 0 24 24"><path d="m8 4 10 8-10 8z"/></svg></button></div>
-<div class="inventory" id="inventory"></div><div class="hint">DRAG TO AIM · HOLD ARROWS TO MOVE · SCOOP UP TO 5</div>
+<div class="run-strip"><button id="build" class="text-button">BUILD · 0</button><span>THE SUNKEN VAULT</span><button id="map" class="text-button">EXPEDITION</button></div><div class="inventory" id="inventory"></div><div class="hint">DRAG TO AIM · COLLECT THROUGH THE LEFT CHUTE</div>
 </main>
 <dialog id="modal" aria-labelledby="modalTitle"><div class="modal-eyebrow" id="modalEyebrow"></div><h1 class="modal-title" id="modalTitle"></h1><div class="modal-copy" id="modalCopy"></div><div id="modalExtra"></div><div class="choices" id="choices"></div></dialog>
 <script src="physics.js"></script>
+<script src="progression.js"></script>
+<script src="art.js"></script>
 <script src="game.js"></script>
 </body></html>
-

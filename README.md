@@ -1,37 +1,50 @@
-# Clawbound
+# Clawbound · The Sunken Vault
 
-A mobile browser roguelike built around a physical claw machine. Formerly Claw Rogue.
+A complete, dependency-free browser roguelike built around a physical claw machine.
 
-**Main branch game:** https://roxorloops1337.github.io/claw-rogue/
+**Play:** https://roxorloops1337.github.io/claw-rogue/
 
-Your robot fights above the machine. Drag across the glass or hold the arrow buttons to aim; press Grab to lower the claw. Keyboard: A/D or arrows to aim, Space to grab, Escape to pause. The sound button mutes mechanical and collection cues.
+Drag the glass or hold the arrow buttons to aim. Press Grab to scoop. Keyboard: A/D or arrows, Space to grab, Escape to pause. Only treasures that fall through the left delivery chute apply their effects. Sound can be toggled in the header.
 
-## Physical grip and delivery
+## The expedition
 
-The jaws and the items share a continuous contact simulation. Items are never attached to the claw or placed in an invisible carrying box. Moving fingers transfer velocity through contact; friction helps support the load, and loose items can slip. The claw closes when its hub reaches the pile, lifts, moves left, opens over the chute, and returns to its previous aim.
+- Twelve chambers across the Verdant Works, Prism Mines, and Astral Vault, with guardians in chambers 4, 8, and 12.
+- Enemies telegraph strikes, heavy attacks, armour, and repairs before each drop.
+- Choose capped upgrades after victories. Elite routes grant two upgrades and extra coins.
+- Choose roads, elite treasuries, sanctuaries, and merchants between chambers.
+- Spend coins on repairs, upgrades, or emergency drops. Build around swords, sparks, shields, healing, scrap, or large hauls.
+- Win or retire an expedition to bank embers for permanent workshop improvements. Unlock Warden and Stormsmith loadouts through play.
+- Full run state—including moving loot and the claw—is saved automatically on this device. Continue from the title screen. Saves use browser storage; clearing site data removes them.
 
-Only an item that falls through the visible prize chute applies its effect. A wider claw changes the actual jaw geometry. Rubber grips increase contact friction. The displayed scoop count is approximate while carrying; it is not a hard capacity limit.
+## Physics and art
 
-This approach was informed by the author's [Claw Crawl](https://games-71g.pages.dev/claw_crawl/) and its [source](https://github.com/RoxorLoops1337/Games/blob/main/claw_crawl/index.html).
+Free circle bodies collide with articulated moving capsule jaws. Contact impulses, friction, spin, and gravity carry the load; items are never attached to an invisible basket. Floor contact supports natural rolling. Widening the claw changes its geometry, while grip upgrades change contact friction. The mobile canvas keeps its aspect ratio so balls remain circular.
 
-## Loot and progression
+Original resolution-independent canvas art includes a brass/enamel salvager, illustrated creatures, distinct guardian details, and three dungeon palettes. Procedural sound has no network dependencies.
 
-- Swords deal 4 damage, sparks deal 6, and scrap deals 1.
-- Shields add 4 block; hearts restore 3 health.
-- Coins buy extra drops when you run out.
-- Clear a floor to choose an upgrade: wider jaws, more friction, damage, block, health, or drops.
-- Ten floors, with bosses on floors 5 and 10.
-- Best floor and mute preference are saved on this device. In-progress runs are not persisted.
+Inspired by the author's [Claw Crawl](https://games-71g.pages.dev/claw_crawl/).
 
-## Development
+## Development and verification
 
-No build step or external runtime dependencies. Open `index.html`, or serve the directory with `python3 -m http.server`.
+No build step. Serve the directory with `python3 -m http.server`.
 
-- `index.html`: accessible controls and layout
-- `styles.css`: responsive presentation
-- `game.js`: run state, input, audio, combat, rendering
-- `physics.js`: fixed-substep contact solver for circle bodies and moving capsule jaws
+- `game.js`: controls, campaign integration, combat, menus, audio, saving, frame loop
+- `physics.js`: sequential contact impulse solver
+- `progression.js`: campaign data, upgrades, economy, validated persistence
+- `art.js`: canvas artwork
+- `styles.css`: responsive layout
+- `tests/mobile.html`: phone-size browser preview
 
-Run `node tests/game.test.cjs` for deterministic integration checks of the actual game code: edge/center grabs, physical delivery accounting, containment, upgraded jaws, empty grabs and pause/resume. Run `node --check game.js` and `node --check physics.js` for syntax validation.
+Run:
 
-The physics is a 2D arcade approximation. These automated checks do not substitute for real-device touch, visual and performance testing.
+```sh
+node tests/physics.test.cjs
+node tests/progression.test.cjs
+node tests/game.test.cjs
+node tests/campaign.test.cjs
+node tests/balance.cjs
+```
+
+Physics tests cover rolling, free release, actual moving-surface carry, pile stability, and chute/divider collisions. Integration checks cover physical grabs, empty grabs, pause, full campaign transitions, elite rewards, shops, armour, repairs, victory, and reloading mid-grab. Persistence tests cover malformed saves, quota errors, upgrade caps, unlocks, and duplicate reward prevention.
+
+The campaign transition test injects defeats to isolate progression logic; the balance script runs actual physical grabs. Automated checks and desktop phone-size previews do not replace testing on physical Android and iOS devices.

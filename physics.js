@@ -8,7 +8,7 @@
   const copySegment = (s, i) => ({ ax:s.ax, ay:s.ay, bx:s.bx, by:s.by, r:s.r ?? 3.5, id:s.id ?? i });
   function create(options = {}) {
     const cfg = { left:12, right:408, floor:326, top:-90, gravity:870,
-      jawFriction:.85, iterations:12, maxStep:1/240, ...options };
+      jawFriction:.85, iterations:12, maxStep:1/240, contactSkin:.3, ...options };
     let previous = new Map();
     function reset(segments = []) { previous = new Map(segments.map((s,i) => [s.id ?? i, copySegment(s,i)])); }
     function init(b) {
@@ -46,18 +46,21 @@
         for(const b of active) { b.vy+=cfg.gravity*h; b.vx*=1-.12*h; b.vy*=1-.12*h; b.spin*=1-1.7*h; }
         const contacts=[];
         function contact(a,b,nx,ny,pen,mu,kvx=0,kvy=0,jaw=false) {
-          if(pen<=0) return;
+          // Include touching surfaces: containment keeps floor penetration at
+          // zero, but a supported token still needs a normal/friction impulse.
+          // A small separating contact is speculative, never an attraction.
+          if(pen < -cfg.contactSkin) return;
           const ra=a.r, rb=b?b.r:0;
           // Circle contact radius is parallel to the normal: no normal torque.
           const c={a,b,nx,ny,pen,mu,kvx,kvy,ra,rb,jn:0,jt:0,
             kn:1/(a._im+(b?b._im:0)),
             kt:1/(a._im+a._ii*ra*ra+(b?b._im+b._ii*rb*rb:0)),
-            bias:Math.min(jaw?100:160,.22/h*Math.max(0,pen-.12))};
+            bias:pen<0 ? pen/h : Math.min(jaw?100:160,.22/h*Math.max(0,pen-.12))};
           const vn=(kvx+(b?b.vx:0)-a.vx)*nx+(kvy+(b?b.vy:0)-a.vy)*ny;
           if(vn < -95) c.bias=Math.max(c.bias,-vn*.1);
           contacts.push(c);
           stats.maxPenetration=Math.max(stats.maxPenetration,pen);
-          if(jaw) { stats.jawContacts++; a.clawContact=.12; }
+          if(jaw && pen>=0) { stats.jawContacts++; a.clawContact=.12; }
         }
         for(let i=0;i<active.length;i++) {
           const a=active[i];
@@ -68,9 +71,9 @@
           contact(a,null,0,-1,cfg.top+a.r-a.y,.5);
           for(let j=i+1;j<active.length;j++) {
             const b=active[j], dx=b.x-a.x,dy=b.y-a.y, rr=a.r+b.r;
-            if(Math.abs(dx)>rr||Math.abs(dy)>rr) continue;
+            if(Math.abs(dx)>rr+cfg.contactSkin||Math.abs(dy)>rr+cfg.contactSkin) continue;
             const d2=dx*dx+dy*dy;
-            if(d2>=rr*rr) continue;
+            if(d2>(rr+cfg.contactSkin)*(rr+cfg.contactSkin)) continue;
             const d=Math.sqrt(d2);
             contact(a,b,d>1e-8?dx/d:1,d>1e-8?dy/d:0,rr-d,.46);
           }
@@ -79,13 +82,13 @@
             const u=l2>1e-8?clamp(((a.x-s.ax)*dx+(a.y-s.ay)*dy)/l2,0,1):0;
             const qx=s.ax+u*dx,qy=s.ay+u*dy,ex=qx-a.x,ey=qy-a.y;
             const rr=a.r+s.r,d2=ex*ex+ey*ey;
-            if(d2>=rr*rr) continue;
+            if(d2>(rr+cfg.contactSkin)*(rr+cfg.contactSkin)) continue;
             const d=Math.sqrt(d2);
             // A token exactly on a segment receives a deterministic perpendicular.
             const len=Math.sqrt(l2)||1;
             contact(a,null,d>1e-8?ex/d:-dy/len,d>1e-8?ey/d:dx/len,
               rr-d,s.jaw?cfg.jawFriction:.5,s.avx+(s.bvx-s.avx)*u,s.avy+(s.bvy-s.avy)*u,s.jaw);
-            if(s.jaw) touched.add(s.id);
+            if(s.jaw && d<=rr) touched.add(s.id);
           }
         }
         // Accumulated normal and Coulomb tangent impulses support a resting pile
