@@ -181,6 +181,7 @@
   const BALL_TYPES = ['sword', 'shield', 'heart', 'spark', 'coin', 'stone'];
   function validBall(ball) {
     return !!ball && typeof ball === 'object' && BALL_TYPES.includes(ball.type) &&
+      (ball.parts === undefined || (Array.isArray(ball.parts) && ball.parts.length > 0 && ball.parts.length <= 32 && ball.parts.every(p => p && ['x','y','r'].every(k => Number.isFinite(p[k])) && p.r > 0 && p.r < 100 && Math.abs(p.x) < 100 && Math.abs(p.y) < 100))) &&
       ['x', 'y', 'r', 'vx', 'vy', 'angle', 'spin'].every(key => Number.isFinite(ball[key])) && ball.r > 0 && ball.r < 100 && typeof ball.alive === 'boolean';
   }
   function validSnapshot(snapshot) {
@@ -198,6 +199,7 @@
     if (['armor', 'shield'].some(key => enemy[key] !== undefined && (!Number.isFinite(enemy[key]) || enemy[key] < 0))) return false;
     const claw = snapshot.claw;
     if (!claw || !['x', 'y', 'open', 'depth', 'contactTime'].every(key => Number.isFinite(claw[key])) || claw.open < 0 || claw.open > 1) return false;
+    if (['pL','pR','vx','vy'].some(k => claw[k] !== undefined && !Number.isFinite(claw[k]))) return false;
     if (!Array.isArray(snapshot.balls) || snapshot.balls.length > 200 || !snapshot.balls.every(validBall)) return false;
     if (!PHASES.includes(snapshot.phase)) return false;
     if (['phaseTime', 'clock', 'lastDelivery'].some(key => !Number.isFinite(snapshot[key]) || snapshot[key] < 0)) return false;

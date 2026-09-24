@@ -1,0 +1,22 @@
+{
+  "name": "clawbound-mobile",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Bundled offline native shell for Clawbound: The Sunken Vault",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "bundle": "node ../scripts/bundle-mobile.cjs",
+    "android:prepare": "npm run bundle && cap sync android && node ../scripts/configure-native.cjs android && node ../scripts/native-art.cjs android",
+    "android:open": "npm run android:prepare && cap open android",
+    "android:bundle": "npm run android:prepare && node ../scripts/android-release.cjs",
+    "ios:add": "npm run bundle && cap add ios && node ../scripts/configure-native.cjs ios",
+    "ios:prepare": "npm run bundle && cap sync ios && node ../scripts/configure-native.cjs ios && node ../scripts/native-art.cjs ios",
+    "ios:open": "npm run ios:prepare && cap open ios"
+  },
+  "dependencies": {
+    "@capacitor/android": "8.5.2",
+    "@capacitor/core": "8.5.2",
+    "@capacitor/ios": "8.5.2"
+  },
+  "devDependencies": { "@capacitor/cli": "8.5.2", "sharp": "0.35.4" }
+}

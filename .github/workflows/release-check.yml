@@ -1,0 +1,61 @@
+name: Native release verification
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '**.js'
+      - '**.cjs'
+      - '**.html'
+      - '**.css'
+      - 'assets/**'
+      - 'fonts/**'
+      - 'mobile/**'
+      - '.github/workflows/release-check.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: JavaScript acceptance checks
+        run: |
+          node --check game.js
+          node --check physics.js
+          node --check progression.js
+          node --check art.js
+          for test in tests/*.test.cjs; do node "$test"; done
+      - name: Install native dependencies
+        working-directory: mobile
+        run: npm ci
+      - name: Bundle local game assets
+        working-directory: mobile
+        run: npm run android:prepare
+      - name: Install Android SDK
+        run: sdkmanager 'platforms;android-36' 'build-tools;36.0.0'
+      - name: Compile Android release
+        working-directory: mobile/android
+        run: |
+          chmod +x gradlew
+          ./gradlew bundleRelease --no-daemon
+      - name: Retain unsigned bundle for signing
+        uses: actions/upload-artifact@v4
+        with:
+          name: clawbound-unsigned-android-bundle
+          path: mobile/android/app/build/outputs/bundle/release/*.aab
+          if-no-files-found: error
+          retention-days: 14

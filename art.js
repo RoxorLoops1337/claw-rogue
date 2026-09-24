@@ -1,7 +1,36 @@
-/* Clawbound's resolution-independent art. All visible claw geometry follows the solver. */
+/* Painted sprites with a vector fallback. Claw geometry always follows the solver. */
 (function(root){
 'use strict';
 const TAU=Math.PI*2;
+// These optional images are presentation only: physics starts immediately, and a
+// failed or slow request keeps the original vector characters fully playable.
+function loadArt(url){
+ if(typeof root.Image!=='function')return {image:null,ready:Promise.resolve(false)};
+ const image=new root.Image();image.decoding='async';
+ const ready=new Promise(resolve=>{image.onload=()=>resolve(true);image.onerror=()=>resolve(false)});
+ image.src=url;return {image,ready};
+}
+const paintedCharacters=loadArt('assets/characters-v3.webp');
+const paintedVault=loadArt('assets/vault-v3.webp');
+// Source rectangles were reviewed against the actual generated atlas. Its
+// row spacing is irregular, so no assumption of uniform grid crops is made.
+const portraitFrames=[
+ [49,8,353,393], [470,84,384,311], [894,37,420,365], [1376,0,389,402],
+ [0,441,447,443], [450,397,450,488], [906,397,420,489], [1325,396,449,489]
+];
+function isReady(asset){return asset.image&&asset.image.complete&&asset.image.naturalWidth>0}
+function paintedActor(g,index,x,y,s,t){
+ if(!isReady(paintedCharacters))return false;
+ const [sx,sy,sw,sh]=portraitFrames[index],im=paintedCharacters.image;
+ const unitX=im.naturalWidth/1774,unitY=im.naturalHeight/887;
+ const height=(index>=5?117:index===1?83:index===2?94:index===4?101:104)*s;
+ const width=height*sw/sh,bob=Math.sin(t*(index===3?2.1:2.7)+index)*1.3;
+ const base=y+40*s;
+ g.save();ellipse(g,x,base,Math.min(37,width*.34),5*s,'#020b1580');
+ g.imageSmoothingEnabled=true;g.imageSmoothingQuality='high';
+ g.drawImage(im,sx*unitX,sy*unitY,sw*unitX,sh*unitY,x-width/2,base-height+bob,width,height);
+ g.restore();return true;
+}
 function ellipse(g,x,y,rx,ry,fill){g.beginPath();g.ellipse(x,y,rx,ry,0,0,TAU);g.fillStyle=fill;g.fill()}
 function round(g,x,y,w,h,r,fill,stroke){g.beginPath();g.roundRect(x,y,w,h,r);g.fillStyle=fill;g.fill();if(stroke){g.strokeStyle=stroke;g.lineWidth=1;g.stroke()}}
 function line(g,pts,c,w){g.beginPath();pts.forEach((p,i)=>i?g.lineTo(p.x,p.y):g.moveTo(p.x,p.y));g.strokeStyle=c;g.lineWidth=w;g.lineCap='round';g.lineJoin='round';g.stroke()}
@@ -92,5 +121,17 @@ function enemy(g,x,y,s,t,kind=0,act=1){g.save();g.translate(x,y+Math.sin(t*2.5+k
   g.fillStyle=gradient(g,0,-30,0,39,[[0,'#aec58c'],[.55,'#739e70'],[1,'#386861']]);g.beginPath();g.moveTo(-34,30);g.bezierCurveTo(-36,9,-25,-29,0,-31);g.bezierCurveTo(23,-32,31,1,35,29);g.quadraticCurveTo(27,42,15,36);g.quadraticCurveTo(0,43,-13,36);g.quadraticCurveTo(-27,42,-34,30);g.fill();g.strokeStyle='#bfcc9855';g.lineWidth=1;g.stroke();ellipse(g,-13,-11,10,6,'#cadca44d');for(const d of [-1,1]){g.fillStyle=d<0?'#a8bc76':'#78a372';g.beginPath();g.moveTo(0,-28);g.quadraticCurveTo(d*8,-55,d*29,-42);g.quadraticCurveTo(d*31,-27,0,-28);g.fill();line(g,[{x:0,y:-29},{x:d*21,y:-38}],'#4e7960',1)}eyes(g,-5);line(g,[{x:-8,y:13},{x:0,y:17},{x:9,y:12}],'#365b52',2);g.fillStyle='#e4dfb8';g.beginPath();g.moveTo(-6,14);g.lineTo(-2,20);g.lineTo(0,16);g.fill();for(let i=0;i<5;i++)ellipse(g,-20+i*9,25+(i%2)*5,2,2,'#c1d19a40')
  }
  g.restore()}
-root.ClawArt={machine,ball,claw,battle,hero,enemy,symbol};
+function paintedBattle(g,floor=1,time=0){
+ if(!isReady(paintedVault)){battle(g,floor,time);return}
+ g.save();g.drawImage(paintedVault.image,0,0,420,180);
+ // Clear health labels and actor silhouettes are more useful than extra detail.
+ g.fillStyle=gradient(g,0,0,0,180,[[0,'#04101988'],[.34,'#07151a12'],[1,'#05151918']]);g.fillRect(0,0,420,180);
+ if(floor>4){g.fillStyle=floor>8?'#bd8c3317':'#7474c525';g.fillRect(0,0,420,180)}
+ for(let i=0;i<12;i++){const xx=((i*79+time*(i%2?2:-2))%420+420)%420,yy=44+(i*31)%108+Math.sin(time*.6+i)*4;ellipse(g,xx,yy,i%3?.55:.9,.7,'#d7ecd65c')}
+ g.restore();
+}
+function paintedHero(g,x,y,s,t){if(!paintedActor(g,0,x,y,s,t))hero(g,x,y,s,t)}
+function paintedEnemy(g,x,y,s,t,kind=0,act=1){const index=kind===4?4+Math.max(1,Math.min(3,act)):Math.max(0,Math.min(3,kind))+1;if(!paintedActor(g,index,x,y,s,t))enemy(g,x,y,s,t,kind,act)}
+root.ClawArt={machine,ball,claw,battle:paintedBattle,hero:paintedHero,enemy:paintedEnemy,symbol,
+ ready:Promise.all([paintedCharacters.ready,paintedVault.ready])};
 })(typeof window!=='undefined'?window:globalThis);

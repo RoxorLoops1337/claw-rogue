@@ -1,0 +1,16 @@
+node_modules/
+www/
+android/.gradle/
+android/local.properties
+android/**/build/
+android/app/src/main/assets/public/
+ios/App/build/
+ios/App/Pods/
+ios/App/App/public/
+*.keystore
+*.jks
+*.mobileprovision
+*.p12
+*.ipa
+*.aab
+*.apk

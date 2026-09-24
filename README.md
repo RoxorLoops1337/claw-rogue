@@ -4,7 +4,7 @@ A complete, dependency-free browser roguelike built around a physical claw machi
 
 **Play:** https://roxorloops1337.github.io/claw-rogue/
 
-Drag the glass or hold the arrow buttons to aim. Press Grab to scoop. Keyboard: A/D or arrows, Space to grab, Escape to pause. Only treasures that fall through the left delivery chute apply their effects. Sound can be toggled in the header.
+Drag and release on the glass to aim and grab, or hold the arrow buttons and press Grab. Tap Close Now during descent to select your scoop depth. You can queue the next aim during delivery. Keyboard: A/D or arrows, Space to grab, Escape to pause. Only treasures that fall through the left delivery chute apply their effects. Sound can be toggled in the header.
 
 ## The expedition
 
@@ -18,9 +18,9 @@ Drag the glass or hold the arrow buttons to aim. Press Grab to scoop. Keyboard: 
 
 ## Physics and art
 
-Free circle bodies collide with articulated moving capsule jaws. Contact impulses, friction, spin, and gravity carry the load; items are never attached to an invisible basket. Floor contact supports natural rolling. Widening the claw changes its geometry, while grip upgrades change contact friction. The mobile canvas keeps its aspect ratio so balls remain circular.
+Compound rigid bodies give swords and vials long silhouettes, while shields and scrap have rounded clusters. Each articulated finger slows independently under contact pressure, wrapping around the pile as it settles. Contact impulses, friction, spin, and gravity carry the load; items are never attached to an invisible basket. Floor contact supports natural rolling. Widening the claw changes its geometry, while grip upgrades change contact friction. The mobile canvas keeps its aspect ratio so balls remain circular.
 
-Original resolution-independent canvas art includes a brass/enamel salvager, illustrated creatures, distinct guardian details, and three dungeon palettes. Procedural sound has no network dependencies.
+Generated painted characters and vault backgrounds are combined with canvas-rendered physical loot, impact effects, and three dungeon palettes. Generation prompts are recorded in `assets/PROMPTS.md`. Procedural sound has no network dependencies.
 
 Inspired by the author's [Claw Crawl](https://games-71g.pages.dev/claw_crawl/).
 
@@ -31,7 +31,8 @@ No build step. Serve the directory with `python3 -m http.server`.
 - `game.js`: controls, campaign integration, combat, menus, audio, saving, frame loop
 - `physics.js`: sequential contact impulse solver
 - `progression.js`: campaign data, upgrades, economy, validated persistence
-- `art.js`: canvas artwork
+- `art.js`: painted sprites, vault scenery, and canvas fallback
+- `loot.js`: shape-matched loot illustration
 - `styles.css`: responsive layout
 - `tests/mobile.html`: phone-size browser preview
 
@@ -48,3 +49,7 @@ node tests/balance.cjs
 Physics tests cover rolling, free release, actual moving-surface carry, pile stability, and chute/divider collisions. Integration checks cover physical grabs, empty grabs, pause, full campaign transitions, elite rewards, shops, armour, repairs, victory, and reloading mid-grab. Persistence tests cover malformed saves, quota errors, upgrade caps, unlocks, and duplicate reward prevention.
 
 The campaign transition test injects defeats to isolate progression logic; the balance script runs actual physical grabs. Automated checks and desktop phone-size previews do not replace testing on physical Android and iOS devices.
+
+## Native release
+
+Android and iOS source projects, icons, offline asset bundling, a privacy page, and a release build workflow are included. See [the native release guide](release/STORE_RELEASE.md) for packaging status and signing. The web game installs as a PWA and caches its complete asset revision for offline play. Native apps bundle assets directly.

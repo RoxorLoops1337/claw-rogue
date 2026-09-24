@@ -1,1 +1,19 @@
-{"id":"./","name":"Clawbound: The Sunken Vault","short_name":"Clawbound","description":"Scoop your weapons. Forge your build. Crack the vault.","start_url":"./","scope":"./","display":"standalone","orientation":"portrait","background_color":"#101f23","theme_color":"#101f23","icons":[{"src":"icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any"}]}
+{
+  "id": "./",
+  "name": "Clawbound: The Sunken Vault",
+  "short_name": "Clawbound",
+  "description": "A tactile claw-machine roguelike. Scoop your weapons, forge your build, and conquer the Sunken Vault.",
+  "lang": "en",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#10262e",
+  "theme_color": "#10262e",
+  "categories": ["games", "entertainment"],
+  "icons": [
+    {"src": "assets/app-icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable"},
+    {"src": "assets/app-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable"},
+    {"src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any"}
+  ]
+}

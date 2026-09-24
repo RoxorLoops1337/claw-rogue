@@ -1,0 +1,12 @@
+'use strict';
+const fs = require('node:fs');
+const path = require('node:path');
+const { spawnSync } = require('node:child_process');
+const android = path.resolve(__dirname, '../mobile/android');
+const wrapper = process.platform === 'win32' ? 'gradlew.bat' : './gradlew';
+if (!fs.existsSync(path.join(android, 'gradlew'))) throw new Error('Missing Android project. Run npm ci and npx cap add android in mobile/.');
+const result = spawnSync(wrapper, ['bundleRelease'], { cwd: android, stdio: 'inherit', shell: process.platform === 'win32' });
+if (result.error) throw result.error;
+if (result.status !== 0) process.exit(result.status || 1);
+console.log('Bundle generated in mobile/android/app/build/outputs/bundle/release/.');
+console.log('This task does not add signing credentials. Sign the release through Android Studio before uploading to Google Play.');

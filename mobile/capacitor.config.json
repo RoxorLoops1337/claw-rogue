@@ -1,0 +1,17 @@
+{
+  "appId": "com.roxorloops.clawbound",
+  "appName": "Clawbound",
+  "webDir": "www",
+  "backgroundColor": "#101f23",
+  "android": {
+    "backgroundColor": "#101f23",
+    "allowMixedContent": false,
+    "webContentsDebuggingEnabled": false
+  },
+  "ios": {
+    "backgroundColor": "#101f23",
+    "contentInset": "never",
+    "scrollEnabled": false,
+    "preferredContentMode": "mobile"
+  }
+}

@@ -1,6 +1,6 @@
 'use strict';
 const assert = require('node:assert/strict');
-const { create } = require('../physics.js');
+const { create, shapeParts } = require('../physics.js');
 const dt = 1 / 120;
 const token = (x, y, extra = {}) => ({ x, y, r: 13, vx: 0, vy: 0, alive: true, ...extra });
 function advance(engine, balls, seconds, segments = () => []) {
@@ -78,3 +78,53 @@ let stressMs;
   assert.deepEqual(b, original);
 }
 console.log('Physics passed: rolling, moving contact carry, free release, real chute, divider, 72-token rest.', { stressMs });
+
+// Long loot strikes the floor at its end, rotates, and rests on its silhouette.
+// An enclosing-circle collider or normal impulses without torque fails this.
+{
+  const engine=create(),parts=shapeParts(['cap',38,6]);
+  const b=token(200,200,{r:19,parts,angle:.7});
+  let maxSpin=0;
+  for (let frame=0;frame<360;frame++) {
+    engine.step(dt,[b]);maxSpin=Math.max(maxSpin,Math.abs(b.spin));
+  }
+  assert.ok(maxSpin>3,'off-center normal contact produces actual torque');
+  assert.ok(Math.abs(b.angle)<.02,'a dropped capsule turns onto its long edge');
+  assert.ok(Math.abs(b.y-320)<.1,'capsule rests on its 6px thick edge, not its 19px bound');
+  assert.ok(!JSON.stringify(b).includes('_shape'),'collision cache is omitted from saved runs');
+}
+
+// A loaded left prong reports resistance without stopping the free right prong.
+{
+  const engine=create({gravity:0}),b=token(200,200,{r:19,parts:shapeParts(['cap',38,6]),angle:.4});
+  const result=engine.step(dt,[b],[
+    {id:'finger-left',side:-1,ax:181,ay:175,bx:181,by:220,r:4},
+    {id:'finger-right',side:1,ax:250,ay:175,bx:250,by:220,r:4},
+  ]);
+  assert.ok(result.jawPressure.left>2.2 && result.jawImpulse.left>0,'loaded finger gives pressure and impulse feedback');
+  assert.equal(result.jawPressure.right,0,'unloaded finger remains free to close');
+  assert.ok(Math.abs(b.spin)>.5,'contact turns a long item in the jaw');
+}
+
+// Mixed compound items settle and can exit the real chute at any orientation.
+{
+  const engine=create({chuteRight:84,dividerTop:145}),balls=[];
+  const patterns=[['cap',38,6],['blob',14],['blob',11],['cap',26,8],['ball',10],['blob',12]];
+  for (let row=0;row<6;row++) for (let col=0;col<8;col++) {
+    const parts=shapeParts(patterns[(row*8+col)%patterns.length]);
+    balls.push(token(110+col*38,290-row*32,{parts,r:Math.max(...parts.map(p=>Math.hypot(p.x,p.y)+p.r)),angle:(row+col)*.53}));
+  }
+  advance(engine,balls,7);
+  for (const b of balls) {
+    assert.ok(Math.hypot(b.vx,b.vy)<8,'mixed shapes settle without perpetual jitter');
+    for (const p of b.parts) {
+      const px=b.x+p.x*Math.cos(b.angle)-p.y*Math.sin(b.angle);
+      const py=b.y+p.x*Math.sin(b.angle)+p.y*Math.cos(b.angle);
+      assert.ok(px-p.r>=12-.001 && px+p.r<=408+.001 && py+p.r<=326+.001,'rotated compound pieces remain in cabinet');
+    }
+  }
+  const falling=token(44,240,{r:19,parts:shapeParts(['cap',38,6]),angle:Math.PI/2});
+  advance(engine,[falling],1);
+  assert.ok(falling.y>500,'rotated capsule falls through physical chute');
+}
+console.log('Compound physics passed: contact torque, silhouette containment, per-finger resistance, mixed pile, chute release.');
