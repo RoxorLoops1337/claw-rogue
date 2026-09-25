@@ -57,3 +57,8 @@ dialog{background:radial-gradient(ellipse at 15% 0,#2b66514a,transparent 55%),li
 /* Title art is the canvas itself; preserve its intrinsic7:3 image in capped views. */
 canvas.modal-art{object-fit:contain;object-position:center}
 @media(max-height:590px){#modal[data-mode="welcome"] canvas.modal-art{height:110px;max-height:110px;aspect-ratio:7/3;object-fit:contain}}
+/* Combat feedback has its own line so it never obscures character silhouettes. */
+@media(max-height:720px){.arena-wrap{min-height:150px;max-height:174px;gap:4px}.status{position:relative;inset:auto;flex:none;min-height:20px;height:20px;padding:0 2px;background:none;border-radius:0;font-size:10px;line-height:1.25;color:#c5d8ca;text-shadow:none}.battle{min-height:126px}}
+@media(max-height:660px){.arena-wrap{min-height:134px;max-height:142px}.battle{min-height:110px}.status{font-size:10px}}
+@media(max-height:590px){.arena-wrap{min-height:124px;max-height:124px}.battle{min-height:100px}.machine{max-width:calc(100% - 8px)}.status{font-size:9px}}
+@media(max-height:450px) and (orientation:landscape){.arena-wrap{height:auto;min-height:174px;max-height:none;margin-bottom:0}.battle{min-height:150px}.status{height:auto;min-height:20px}.machine{max-width:340px}}
