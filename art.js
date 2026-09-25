@@ -12,6 +12,8 @@ function loadArt(url){
 }
 const paintedCharacters=loadArt('assets/characters-v3.webp');
 const paintedVault=loadArt('assets/art-v4/vault.webp');
+const scenicVaults=['verdant','prism','astral'].map(name=>loadArt('assets/art-v5/'+name+'.webp'));
+const paintedCabinet=loadArt('assets/art-v5/machine.webp');
 const actorNames=['hero','slime','beetle','ghost','golem','root','prism','astral'];
 const sculptedActors=actorNames.map(name=>loadArt('assets/art-v4/'+name+'.webp'));
 // Source rectangles were reviewed against the actual generated atlas. Its
@@ -125,11 +127,19 @@ function machine(g,o={}){
  // An uncluttered deep cabinet lets the actual treasure silhouettes carry the detail.
  g.fillStyle=gradient(g,0,0,0,h,[[0,'#07191f'],[.45,'#102f36'],[1,'#071b25']]);g.fillRect(0,0,w,h);
  glow(g,w*.65,132,183,'#64cbb11a');
- // Quiet inset architecture and a low-intensity glass reflection.
- round(g,c+19,41,w-c-38,h-62,14,'#07192335','#83cdb016');
- round(g,c+24,46,w-c-48,h-72,10,'#07192300','#08171d88');
- g.strokeStyle='#99d7be0c';g.lineWidth=1;
- for(let i=0;i<3;i++){g.beginPath();g.moveTo(c+51+i*65,300);g.lineTo(c+51+i*65,95);g.quadraticCurveTo(c+51+i*65,58,c+79+i*65,57);g.stroke()}
+ // Generated enamel lining is confined to the recessed loot chamber. Its
+ // decorative frame never substitutes for a wall, rail, divider, or physical floor.
+ if(isReady(paintedCabinet)){
+  g.save();g.beginPath();g.rect(c+5,34,w-c-17,f-34);g.clip();
+  coverArt(g,paintedCabinet.image,c+5,34,w-c-17,f-34,.45);
+  g.fillStyle=gradient(g,0,34,0,f,[[0,'#061a2326'],[.48,'#061a2315'],[1,'#03132155']]);g.fillRect(c+5,34,w-c-17,f-34);
+  g.restore();
+ }else{
+  round(g,c+19,41,w-c-38,h-62,14,'#07192335','#83cdb016');
+  round(g,c+24,46,w-c-48,h-72,10,'#07192300','#08171d88');
+  g.strokeStyle='#99d7be0c';g.lineWidth=1;
+  for(let i=0;i<3;i++){g.beginPath();g.moveTo(c+51+i*65,300);g.lineTo(c+51+i*65,95);g.quadraticCurveTo(c+51+i*65,58,c+79+i*65,57);g.stroke()}
+ }
  g.fillStyle=gradient(g,109,0,190,0,[[0,'#cbfff407'],[1,'#cbfff400']]);g.beginPath();g.moveTo(112,34);g.lineTo(173,34);g.lineTo(143,f);g.lineTo(104,f);g.closePath();g.fill();
  // Recessed walls match the solver boundaries at x12 / x408.
  g.fillStyle=gradient(g,0,0,14,0,[[0,'#020d14'],[.5,'#314d4c'],[.83,'#8caa8b'],[1,'#142b2f']]);g.fillRect(0,31,12,h-31);
@@ -219,14 +229,25 @@ function enemy(g,x,y,s,t,kind=0,act=1){g.save();g.translate(x,y+Math.sin(t*2.5+k
   g.fillStyle=gradient(g,0,-30,0,39,[[0,'#aec58c'],[.55,'#739e70'],[1,'#386861']]);g.beginPath();g.moveTo(-34,30);g.bezierCurveTo(-36,9,-25,-29,0,-31);g.bezierCurveTo(23,-32,31,1,35,29);g.quadraticCurveTo(27,42,15,36);g.quadraticCurveTo(0,43,-13,36);g.quadraticCurveTo(-27,42,-34,30);g.fill();g.strokeStyle='#bfcc9855';g.lineWidth=1;g.stroke();ellipse(g,-13,-11,10,6,'#cadca44d');for(const d of [-1,1]){g.fillStyle=d<0?'#a8bc76':'#78a372';g.beginPath();g.moveTo(0,-28);g.quadraticCurveTo(d*8,-55,d*29,-42);g.quadraticCurveTo(d*31,-27,0,-28);g.fill();line(g,[{x:0,y:-29},{x:d*21,y:-38}],'#4e7960',1)}eyes(g,-5);line(g,[{x:-8,y:13},{x:0,y:17},{x:9,y:12}],'#365b52',2);g.fillStyle='#e4dfb8';g.beginPath();g.moveTo(-6,14);g.lineTo(-2,20);g.lineTo(0,16);g.fill();for(let i=0;i<5;i++)ellipse(g,-20+i*9,25+(i%2)*5,2,2,'#c1d19a40')
  }
  g.restore()}
+function coverArt(g,image,x,y,w,h,anchorY=.5){
+ const scale=Math.max(w/image.naturalWidth,h/image.naturalHeight),sw=w/scale,sh=h/scale;
+ g.drawImage(image,(image.naturalWidth-sw)/2,(image.naturalHeight-sh)*anchorY,sw,sh,x,y,w,h);
+}
 function paintedBattle(g,floor=1,time=0){
- if(!isReady(paintedVault)){battle(g,floor,time);return}
  const act=floor>8?3:floor>4?2:1;
+ const scenic=scenicVaults[act-1],hasBiome=isReady(scenic),asset=hasBiome?scenic:paintedVault;
+ if(!isReady(asset)){battle(g,floor,time);return}
  const light=act===1?'#9bf1c7':act===2?'#bba7ff':'#ffd894';
- g.save();const backdrop=paintedVault.image;const sourceWidth=Math.min(backdrop.naturalWidth,backdrop.naturalHeight*420/180);g.drawImage(backdrop,(backdrop.naturalWidth-sourceWidth)/2,0,sourceWidth,backdrop.naturalHeight,0,0,420,180);
+ g.save();
+ if(hasBiome){
+  // The illustrated front lips differ in depth. These reviewed crops put the
+  // walkable surface under the same y154 foot baseline in every chamber.
+  const image=asset.image,sourceHeight=image.naturalHeight*[375/420,392/420,1][act-1],sourceWidth=sourceHeight*420/180;
+  g.drawImage(image,(image.naturalWidth-sourceWidth)/2,0,sourceWidth,sourceHeight,0,0,420,180);
+ }else coverArt(g,asset.image,0,0,420,180,.9);
  // Three quiet planes: distant painted vault, lit combat floor, dark foreground.
  g.fillStyle=gradient(g,0,0,0,180,[[0,'#050d23a8'],[.29,'#0b153522'],[.69,'#06122910'],[1,'#04102268']]);g.fillRect(0,0,420,180);
- if(act>1){g.fillStyle=act===3?'#d89b2515':'#796ae72c';g.fillRect(0,0,420,180)}
+ if(act>1&&!hasBiome){g.fillStyle=act===3?'#d89b2515':'#796ae72c';g.fillRect(0,0,420,180)}
  // Long, soft diagonal shafts frame the fighters without flickering on them.
  for(let i=0;i<3;i++){g.fillStyle=gradient(g,110+i*120,15,30+i*120,161,[[0,light+'0c'],[1,light+'00']]);g.beginPath();g.moveTo(90+i*132,0);g.lineTo(121+i*132,0);g.lineTo(70+i*112,169);g.lineTo(11+i*112,169);g.closePath();g.fill()}
  ellipse(g,103,156,63,10,'#c3dcbd08');ellipse(g,316,156,68,10,'#c3dcbd08');
@@ -242,5 +263,5 @@ function paintedBattle(g,floor=1,time=0){
 function paintedHero(g,x,y,s,t,state={}){if(!paintedActor(g,0,x,y,s,t,state))hero(g,x,y,s,t)}
 function paintedEnemy(g,x,y,s,t,kind=0,act=1,state={}){const index=kind===4?4+Math.max(1,Math.min(3,act)):Math.max(0,Math.min(3,kind))+1;if(!paintedActor(g,index,x,y,s,t,state))enemy(g,x,y,s,t,kind,act)}
 root.ClawArt={machine,ball,claw,battle:paintedBattle,hero:paintedHero,enemy:paintedEnemy,symbol,
- ready:Promise.all([paintedCharacters.ready,paintedVault.ready,...sculptedActors.map(asset=>asset.ready)])};
+ ready:Promise.all([paintedCharacters.ready,paintedVault.ready,paintedCabinet.ready,...scenicVaults.map(asset=>asset.ready),...sculptedActors.map(asset=>asset.ready)])};
 })(typeof window!=='undefined'?window:globalThis);

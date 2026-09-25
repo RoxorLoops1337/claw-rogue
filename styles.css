@@ -65,3 +65,51 @@ canvas.modal-art{object-fit:contain;object-position:center}
 
 /* One original icon vocabulary across every interface surface. */
 .choice-glyph{display:inline-block;flex:none;vertical-align:middle}.choice-mark .choice-glyph{width:24px;height:24px}.sample .loot-glyph{width:20px;height:20px}.relic-tag .choice-glyph{width:12px;height:12px}.map-node .choice-glyph,.arrow .choice-glyph{width:18px;height:18px}.arrow{display:flex;align-items:center;justify-content:center}
+/* Painted material skins. Typography, icons, focus rings and hit areas remain native UI. */
+:root{--skin-gold:url('assets/art-v5/button-gold.webp');--skin-teal:url('assets/art-v5/button-teal.webp');--skin-panel:url('assets/art-v5/panel.webp');--scene-workshop:url('assets/art-v5/workshop.webp');--scene-machine:url('assets/art-v5/machine.webp')}
+.app{background-image:linear-gradient(155deg,#0b262ce8,#071b21ed 62%,#0a2429e6),var(--skin-panel);background-position:center;background-size:cover;background-color:#081e25}
+.machine{background-image:linear-gradient(95deg,#223d415c,#0c293359 8%,#0c293359 92%,#29494370),var(--skin-panel);background-position:center;background-size:cover;background-color:#113038;box-shadow:0 4px 0 #021319,0 9px 18px #0006,inset 0 1px #f9dfa65f,inset 2px 0 #b6dcc521}
+.machine-top{background-image:linear-gradient(#173b3e35,#06252d85),var(--skin-teal);background-size:100% 100%;background-position:center;text-shadow:0 1px 3px #00151bdd}
+.glass{background-image:linear-gradient(#08252c50,#061e2699),var(--scene-machine);background-size:cover;background-position:center}
+.move{background-image:linear-gradient(#0b2f3926,#09252e52),var(--skin-teal);background-position:center;background-size:auto 100%;background-color:#15373d;border-color:#aacaba45;box-shadow:inset 0 1px #d7edcf24,0 3px 7px #0004}
+.move:disabled{background-image:linear-gradient(#10292dc2,#10292dd4),var(--skin-teal);color:#668980}
+.drop{background-image:linear-gradient(#fff0bd0a,#b378371a),var(--skin-gold);background-size:100% 100%;background-position:center;background-color:#efc57f;color:#21372c;border-top-color:#fff0c6cc;border-left-color:#f3db9daa;border-right-color:#d6b976aa;text-shadow:0 1px #fff1c68c}
+.drop:before{background:linear-gradient(#fff7df20,transparent);height:38%}
+.drop.is-closing,.drop[data-action="close"]{background-image:linear-gradient(#bdf8d6bb,#8ae0bfbb),var(--skin-gold);background-color:#a8e8c5;background-size:100% 100%;color:#133d30}
+.drop:disabled{background-image:linear-gradient(#1b363bd9,#102e34e8),var(--skin-teal);background-color:#15363b;color:#a8c0b6;border-color:#a0c4ad38;border-bottom-color:#071e25;text-shadow:0 1px #041a1fcc}
+.choice,.modal-close{background-image:linear-gradient(100deg,#133a4099,#0a2931c9),var(--skin-teal);background-size:100% 100%;background-position:center;background-color:#16383e;border-color:#b2d0b54a;text-shadow:0 1px 3px #05202980}
+.choice-mark{background-image:linear-gradient(145deg,#f0d18b24,#86714210),var(--skin-panel);background-size:cover;background-position:center;border-color:#d7c68a44;box-shadow:inset 0 1px #fff3c52b,0 2px 5px #06191f55}
+.choice:active:not(:disabled){background-image:linear-gradient(100deg,#456b4f99,#153e3bc9),var(--skin-teal)}
+#modal[data-mode="welcome"] .choice:first-child,#modal[data-mode="pause"] .choice:first-child{background-image:linear-gradient(#fff0bd05,#b3783712),var(--skin-gold);background-size:100% 100%;background-position:center;background-color:#edc17a;text-shadow:0 1px #fff1cc6b}
+#modal[data-mode="welcome"] .choice:first-child .choice-mark,#modal[data-mode="pause"] .choice:first-child .choice-mark{background-image:linear-gradient(#a68a4923,#7d602023);box-shadow:inset 0 1px #fff2c754,0 1px 3px #83612813}
+#modal[data-mode="reward"] .choice{background-image:linear-gradient(110deg,#45633ca6,#103d37c9),var(--skin-teal);background-size:100% 100%;border-color:#e4cf8870}
+#modal[data-mode="reward"] .choice-mark{background-image:linear-gradient(145deg,#e9ca853d,#af854917),var(--skin-panel);background-size:cover}
+dialog{background-image:radial-gradient(ellipse at 18% 0,#76a9701f,transparent 55%),linear-gradient(#102f36e0,#071e29f2),var(--skin-panel);background-size:cover;background-position:center;background-color:#0b2730;border-color:#d8c08a80;box-shadow:0 28px 100px #000d,inset 0 1px #fff0c536,0 0 0 5px #8dbb9a07}
+#modal[data-mode="reward"]{background-image:radial-gradient(ellipse at 80% 0,#a4ad4538,transparent 56%),linear-gradient(#103b36dc,#09252eee),var(--skin-panel);background-size:cover}
+#modal[data-mode="over"]{background-image:radial-gradient(ellipse at 100% 0,#bb7c4835,transparent 55%),linear-gradient(#1c3037e6,#0a202af2),var(--skin-panel);background-size:cover}
+#modal[data-mode="workshop"],#modal[data-mode="shop"]{background-image:linear-gradient(180deg,#061e2699 0,#07242cdc 22%,#071f2aef 48%,#071e29fa 100%),var(--scene-workshop);background-size:cover;background-position:center top;background-color:#092630}
+#modal[data-mode="workshop"] .modal-title,#modal[data-mode="shop"] .modal-title{text-shadow:0 3px 12px #02121ac9}
+#bootScreen,.boot{background-image:radial-gradient(ellipse at 50% 42%,#071d231a,#04151a91 78%),linear-gradient(#05202b73,#0419214f 40%,#04151ad9),var(--scene-workshop);background-size:cover;background-position:center;background-color:#081e26}
+.boot-brand{text-shadow:0 3px 5px #051c23e6,0 8px 26px #051821e0}.boot-subtitle,.boot-caption{text-shadow:0 2px 5px #00131c}.boot-emblem{filter:drop-shadow(0 4px 8px #061b22) drop-shadow(0 0 20px #f5ce8329)}
+.progress-panel,.stat-card{background-image:linear-gradient(#153b3dd9,#112e35e6),var(--skin-panel);background-size:cover;border-color:#c9c2903d}
+.relic-tag{background-image:linear-gradient(#142f32db,#122c32e8),var(--skin-panel);background-size:cover}
+@media(hover:hover){.choice:hover:not(:disabled){background-image:linear-gradient(100deg,#345f4a9e,#153d39ba),var(--skin-teal);border-color:#e5ce98}.move:hover:not(:disabled){filter:brightness(1.15)}#modal[data-mode="welcome"] .choice:first-child:hover,#modal[data-mode="pause"] .choice:first-child:hover{background-image:linear-gradient(#fff6d41a,#b3783705),var(--skin-gold)}}
+/* Generated emblem and inventory illustrations keep their own silhouettes. */
+img.choice-glyph,img.loot-glyph,img.brand-crest,img.boot-emblem{object-fit:contain;object-position:center}
+.brand-mark:has(.brand-crest){background:none;border-color:transparent;box-shadow:none;overflow:visible}
+.brand-crest{display:block;width:32px;height:32px;max-width:none;filter:drop-shadow(0 2px 3px #03151b66)}
+img.boot-emblem{display:block;width:108px;height:108px}
+.choice-mark img.choice-glyph{width:32px;height:32px;filter:drop-shadow(0 2px 3px #00182080)}
+.sample img.loot-glyph{width:25px;height:25px}
+.relic-tag img.choice-glyph{width:14px;height:14px}
+/* Preserve the painted corners; the low-contrast center stays beneath live labels. */
+.app{background-image:linear-gradient(155deg,#0b262cb8,#071b21df 62%,#0a2429c9),var(--skin-panel);background-size:100% 100%}
+dialog{background-image:radial-gradient(ellipse at 18% 0,#76a97014,transparent 55%),linear-gradient(#102f367d,#071e29b8),var(--skin-panel);background-size:100% 100%}
+#modal[data-mode="workshop"],#modal[data-mode="shop"]{background-image:linear-gradient(180deg,#051b2359 0,#07242cb0 24%,#071f2ac9 52%,#071e29ed 100%),var(--scene-workshop);background-size:cover}
+#modal[data-mode="reward"]{padding-top:58px;border-color:#a48e5959;background-image:radial-gradient(ellipse at 50% 4%,#9dc47930,transparent 45%),linear-gradient(#103b36c9,#09252ee0),var(--skin-panel);background-size:100% 100%}
+#modal[data-mode="reward"]::before{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;background:url('assets/art-v5/reward-frame.webp') center/100% 100% no-repeat}
+#modal[data-mode="reward"]>*{position:relative;z-index:1}
+#modal[data-mode="reward"] .modal-eyebrow{text-align:center;letter-spacing:1.6px}
+#modal[data-mode="reward"] .modal-title{text-align:center;text-shadow:0 2px 10px #041c2680}
+#modal[data-mode="reward"] .modal-copy{text-align:center}
+@media(max-height:590px){#modal[data-mode="reward"]{padding-top:50px}}

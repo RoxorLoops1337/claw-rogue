@@ -32,10 +32,13 @@
     '→':'right','←':'left','›':'chevron','✓':'check','▶':'play','✦':'star','?':'help',
     '♜':'vault','↻':'again','↗':'exit'
   };
+  const lootImages = {sword:'sword', shield:'shield', bolt:'spark', heart:'heal', coin:'coin', scrap:'scrap'};
   function escape(value) { return String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
   function mark(value) {
     const name = Object.prototype.hasOwnProperty.call(marks, value) ? marks[value] : null;
     if (!name) return escape(value);
+    const loot = lootImages[name];
+    if (loot) return '<img class="choice-glyph loot-glyph" data-icon="'+name+'" src="assets/art-v5/loot-'+loot+'.webp" width="24" height="24" alt="" aria-hidden="true" decoding="async">';
     return '<svg class="choice-glyph loot-glyph" data-icon="'+name+'" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">'+paths[name]+'</svg>';
   }
   root.ClawIcons = Object.freeze({mark});

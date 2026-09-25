@@ -1,6 +1,22 @@
 /* Physical loot silhouettes. These share the compound bodies used by the solver. */
 (function(root){'use strict';
 const TAU=Math.PI*2;
+const assetNames={sword:'sword',shield:'shield',heart:'heal',spark:'spark',coin:'coin',stone:'scrap'};
+const sprites={},assets={},bodyBounds=new WeakMap();
+const ready=Promise.all(Object.entries(assetNames).map(([type,name])=>new Promise(resolve=>{
+ const src='assets/art-v5/loot-'+name+'.webp';assets[type]=src;
+ if(typeof Image==='undefined'){resolve();return;}
+ const im=new Image();let finished=false;
+ const done=()=>{if(finished)return;finished=true;resolve();};
+ im.onload=()=>{sprites[type]=im;done();};im.onerror=done;im.src=src;
+ if(im.complete&&im.naturalWidth){sprites[type]=im;done();}
+ if(typeof setTimeout==='function')setTimeout(done,4000);
+})));
+function bounds(parts){
+ let box=bodyBounds.get(parts);if(box)return box;
+ const x=Math.min(...parts.map(p=>p.x-p.r)),y=Math.min(...parts.map(p=>p.y-p.r));
+ box={x,y,w:Math.max(...parts.map(p=>p.x+p.r))-x,h:Math.max(...parts.map(p=>p.y+p.r))-y};bodyBounds.set(parts,box);return box;
+}
 function compound(g,parts){g.beginPath();for(const p of parts){g.moveTo(p.x+p.r,p.y);g.arc(p.x,p.y,p.r,0,TAU)}}
 function stroke(g,points,color,width){g.beginPath();points.forEach(([x,y],i)=>i?g.lineTo(x,y):g.moveTo(x,y));g.strokeStyle=color;g.lineWidth=width;g.lineCap='round';g.lineJoin='round';g.stroke()}
 function draw(g,b,t){
@@ -10,6 +26,15 @@ function draw(g,b,t){
  const palette={sword:['#fff6d9','#c9d9d5','#526f79'],shield:['#d4fff1','#43baa9','#145262'],heart:['#ffe0dd','#f0818f','#813d57'],spark:['#f0dfff','#a781eb','#51428a'],coin:['#fff0ae','#edbb59','#936036'],stone:['#dde7df','#9baeb1','#42586a']}[b.type];
  const grad=g.createLinearGradient(0,-r*.7,0,r*.7);grad.addColorStop(0,palette[0]);grad.addColorStop(.38,palette[1]);grad.addColorStop(1,palette[2]);
  compound(g,parts);g.lineWidth=2.3;g.strokeStyle='#06131f';g.stroke();g.fillStyle=grad;g.fill();
+ // Artwork is an enamel surface on the real compound shape. Clipping keeps
+ // every visible edge inside the existing collider; no decorative overhangs.
+ const sprite=sprites[b.type];
+ if(sprite){
+  const box=bounds(parts);g.save();compound(g,parts);g.clip();
+  g.imageSmoothingEnabled=true;g.imageSmoothingQuality='high';
+  g.drawImage(sprite,box.x,box.y,box.w,box.h);g.restore();
+  g.restore();return;
+ }
  g.lineCap='round';g.lineJoin='round';
  // Broad enamel highlight; one shared upper-left light across every loot family.
  if(b.type!=='sword'){g.save();g.globalAlpha=.6;g.fillStyle='#fffde7';g.beginPath();g.ellipse(-r*.25,-r*.43,r*.24,r*.095,-.35,0,TAU);g.fill();g.restore();}
@@ -30,5 +55,5 @@ function draw(g,b,t){
  }
  g.restore();
 }
-root.ClawLoot={draw};
+root.ClawLoot={draw,ready,assets};
 })(typeof window!=='undefined'?window:globalThis);

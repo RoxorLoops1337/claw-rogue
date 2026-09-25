@@ -59,12 +59,12 @@ function updateUI(){
  const intent=P.intentFor(run.enemy,run.turn||0);
  $('#intent').textContent=intent.label+(run.enemy.armor?` · ${run.enemy.armor} ARMOR`:'');
  $('#drops').textContent=run.drops;
- $('#drop').disabled=!['aim','down'].includes(phase)||paused;
+ $('#drop').disabled=paused||!(phase==='aim'||canCloseGrip());
  $('#left').disabled=$('#right').disabled=phase!=='aim'||paused;
- $('#dropLabel').textContent=paused?'PAUSED':({aim:'GRAB',down:'CLOSE NOW',close:'SCOOPING',up:'LIFTING',carry:'DELIVERING',release:'LOOT!',resolve:'YOUR TURN',enemy:'INCOMING',return:'RETURNING',reward:'CHAMBER CLEAR',over:'RUN COMPLETE'}[phase]||'GRAB');
+ $('#dropLabel').textContent=paused?'PAUSED':({aim:'GRAB',down:canCloseGrip()?'CLOSE NOW':'LOWERING',close:'SCOOPING',up:'LIFTING',carry:'DELIVERING',release:'LOOT!',resolve:'YOUR TURN',enemy:'INCOMING',return:'RETURNING',reward:'CHAMBER CLEAR',over:'RUN COMPLETE'}[phase]||'GRAB');
  $('#clawLabel').textContent=run.size>=2?'TITAN CLAW':run.size?'WIDE CLAW':'BRASS CLAW';
  $('#load').textContent=(phase==='close'||(phase==='up'&&phaseTime<.4))?'SETTLING…':claw.held.length+' IN SCOOP';
- $('#drop').classList.toggle('is-closing',phase==='down');
+ $('#drop').classList.toggle('is-closing',canCloseGrip());
  $('#capacity').setAttribute('aria-label',`Grip strength: ${Math.round(run.grip*100)} percent`);
  $('#capacity').innerHTML=Array.from({length:5},(_,i)=>`<i class="${i<Math.round(run.grip*3)?'loaded':''}"></i>`).join('');
  $('#routeDots').innerHTML=Array.from({length:12},(_,i)=>`<i class="route-dot ${i+1<run.floor?'done':i+1===run.floor?'current':''} ${(i+1)%4===0?'boss':''}"></i>`).join('');
@@ -124,8 +124,12 @@ function jawSegments(){
  jawPoints().forEach((jaw,index)=>{for(let i=0;i<jaw.length-1;i++)segments.push({ax:jaw[i].x,ay:jaw[i].y,bx:jaw[i+1].x,by:jaw[i+1].y,r:3.6*clawScale(),side:index===0?-1:1,id:`jaw-${index}-${i}`})});
  segments.push({ax:claw.x-6,ay:claw.y,bx:claw.x+6,by:claw.y,r:9*clawScale(),side:0,id:'hub'});return segments;
 }
+// Repeated taps must not turn GRAB into CLOSE NOW before the motor has moved.
+// Gate on actual travel, so slow frames and restored drops behave the same.
+const MIN_CLOSE_DESCENT=70;
+function canCloseGrip(){return phase==='down'&&claw.y-(Number.isFinite(claw.dropStartY)?claw.dropStartY:40)>=MIN_CLOSE_DESCENT;}
 function closeGrip(){
- if(phase!=='down'||paused)return;
+ if(!canCloseGrip()||paused)return;
  claw.haltL=claw.haltR=false;setPhase('close');sound('grip');haptic(12);message('The fingers close around the pile.');
 }
 function drop(){
@@ -134,9 +138,9 @@ function drop(){
  if(aimTarget!==null&&Math.abs(claw.x-aimTarget)>2){pendingDrop=true;return;}
  pendingDrop=false;run.drops--;leftHeld=rightHeld=false;aimTarget=null;
  claw.open=1;claw.pL=claw.pR=PHI_OPEN;claw.haltL=claw.haltR=false;claw.contactTime=0;
- claw.depth=FLOOR-60*clawScale()-4;claw.homeX=claw.x;claw.vx=claw.vy=0;
+ claw.depth=FLOOR-60*clawScale()-4;claw.homeX=claw.x;claw.dropStartY=claw.y;claw.vx=claw.vy=0;
  delivered=[];totals={damage:0,block:0,heal:0,coins:0};lastDelivery=clock;gripCount=0;
- setPhase('down');checkpoint();sound('drop');haptic(8);message('Tap CLOSE NOW to choose your grabbing depth.');
+ setPhase('down');checkpoint();sound('drop');haptic(8);message('Lowering the claw…');
 }
 function haptic(duration){if(!muted&&window.navigator?.vibrate)window.navigator.vibrate(duration)}
 function physics(dt){engine.config.jawFriction=run.grip||.85;contactInfo=engine.step(dt,balls,jawSegments());for(const b of balls){if(!b.alive)continue;if(b.x<CHUTE&&b.y-b.r>MH+6)collectBall(b)}if(['up','carry','release'].includes(phase)){claw.held=balls.filter(b=>b.alive&&Math.abs(b.x-claw.x)<halfWidth()+b.r&&b.y>claw.y+8&&b.y<claw.y+72*clawScale());if(claw.held.length!==gripCount){gripCount=claw.held.length;updateUI()}}else claw.held=[];}
@@ -307,8 +311,10 @@ if(phase==='return'){
  if(Math.abs(goal-claw.x)<.1){setPhase('aim');message('Drag and release to grab. Choose a cluster you can wrap around.');if(pendingDrop)drop()}
 }
 if(phase==='down'){
+ const wasArmed=canCloseGrip();
  claw.vy=Math.min(230,(claw.vy||0)+1800*dt);claw.y=Math.min(claw.depth,claw.y+claw.vy*dt);
- claw.contactTime=(contactInfo.touchedIds||[]).includes('hub')?claw.contactTime+dt:0;
+ if(!wasArmed&&canCloseGrip()){updateUI();message('Tap CLOSE NOW to choose your grabbing depth.');}
+ claw.contactTime=canCloseGrip()&&(contactInfo.touchedIds||[]).includes('hub')?claw.contactTime+dt:0;
  if(claw.y>=claw.depth||claw.contactTime>.018)closeGrip();
 }
 if(phase==='close'){
@@ -506,7 +512,7 @@ function finishLoading(){
  if(!started)welcome(saved);
 }
 if(typeof Image==='undefined')finishLoading();
-else if(A.ready)A.ready.then(()=>{finishLoading();drawTitleArt();},finishLoading);
+else if(A.ready)Promise.all([A.ready,window.ClawLoot?.ready]).then(()=>{finishLoading();drawTitleArt();},finishLoading);
 else finishLoading();
 document.fonts?.ready.then(drawTitleArt);
 setTimeout(finishLoading,2500);
