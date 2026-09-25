@@ -1,33 +1,93 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#101f23">
-<meta name="description" content="A physical claw-machine roguelike. Scoop your weapons, build your salvager, and conquer the Sunken Vault.">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<title>Clawbound · The Sunken Vault</title>
-<link rel="icon" href="icon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="assets/app-icon-192.png">
-<link rel="manifest" href="manifest.webmanifest">
-<link rel="stylesheet" href="styles.css?v=20260925-1">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#071b20">
+  <meta name="description" content="A physical claw-machine roguelike. Scoop your weapons, build your salvager, and conquer the Sunken Vault.">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Clawbound · The Sunken Vault</title>
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="assets/app-icon-192.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="preload" href="fonts/manrope-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/barlow-condensed-latin-700-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="styles.css?v=20260925-2">
 </head>
 <body>
-<div id="bootScreen" class="boot" aria-label="Loading Clawbound"><div class="boot-brand">CLAW<span>BOUND</span></div><div class="boot-progress"></div><p class="boot-caption">OPENING THE SUNKEN VAULT</p></div>
+<div id="bootScreen" class="boot" role="status" aria-label="Loading Clawbound">
+  <svg class="boot-emblem" width="96" height="96" viewBox="0 0 96 96" fill="none" aria-hidden="true">
+    <path d="M48 5 84 26v44L48 91 12 70V26Z" stroke="currentColor" stroke-width="1.5" opacity=".4"/>
+    <path d="M48 13 77 30v36L48 83 19 66V30Z" stroke="currentColor" stroke-width="1" opacity=".15"/>
+    <path d="M48 23v18m-9 0h18M39 41 29 57l7 13 9-7m12-22 10 16-7 13-9-7" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="m48 48 6 8-6 8-6-8Z" fill="currentColor"/>
+  </svg>
+  <div class="boot-brand">CLAW<span>BOUND</span></div>
+  <div class="boot-subtitle">THE SUNKEN VAULT</div>
+  <div class="boot-progress" aria-hidden="true"></div>
+  <p class="boot-caption">BRING SOMETHING BACK.</p>
+  <div class="boot-footer">A LITTLE SKILL. A LITTLE LUCK.</div>
+</div>
 <main class="app" aria-label="Clawbound game">
-<header><div class="brand"><span>⌁</span>CLAW<b>BOUND</b></div><div class="top-actions"><div class="coin-counter" aria-label="Coins"><i class="coin-icon"></i><span id="coins">0</span></div><button class="icon-button" id="sound" aria-label="Mute sound" aria-pressed="true">♪</button><button class="icon-button" id="help" aria-label="How to play">?</button><button class="icon-button" id="pause" aria-label="Pause game">Ⅱ</button></div></header>
-<div class="route"><span class="floor" id="floor">FLOOR 01</span><div class="route-line"></div><span id="zone">MOSSY OUTPOST</span><div class="route-dots" id="routeDots" aria-hidden="true"></div></div>
-<section class="battle" aria-label="Battle arena"><canvas id="battleCanvas" aria-label="Your robot faces the enemy"></canvas><div class="fighter-labels"><div class="fighter"><div class="name">YOU · SCRAPPER</div><div class="health-line"><div class="bar"><i id="heroBar"></i></div><span class="hp-value" id="heroHp">40/40</span></div></div><div class="fighter enemy"><div class="name" id="enemyName">MOSS MUNCHER</div><div class="health-line"><span class="hp-value" id="enemyHp">24/24</span><div class="bar"><i id="enemyBar"></i></div></div></div></div><div class="battle-tag">VS</div><div class="shield-badge" id="shield">◇ 0 BLOCK</div><div class="intent" id="intent">Next attack · 4</div></section>
-<div class="status" id="status" role="status" aria-live="polite">Slide to aim. Scoop a handful.</div>
-<section class="machine" aria-label="Claw machine"><div class="machine-top"><div class="machine-title"><i class="led"></i>LOOT CHAMBER</div><div class="machine-stat"><b id="drops">6</b> DROPS LEFT</div></div><div class="glass"><canvas id="machineCanvas" aria-label="Drag and release to grab. Tap Close Now during descent to choose depth."></canvas></div><div class="machine-foot"><span id="clawLabel">STANDARD CLAW</span><div class="capacity" id="capacity" aria-label="Claw capacity: 5"></div><span id="load">0 / 5</span></div></section>
-<div class="controls"><button class="move" id="left" aria-label="Move claw left"><svg viewBox="0 0 24 24"><path d="M16 4 6 12l10 8z"/></svg></button><button class="drop" id="drop"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2v6m-3 0h6M9 8 5 15l3 5 3-2m4-10 4 7-3 5-3-2"/></svg><span id="dropLabel">GRAB</span></button><button class="move" id="right" aria-label="Move claw right"><svg viewBox="0 0 24 24"><path d="m8 4 10 8-10 8z"/></svg></button></div>
-<div class="run-strip"><button id="build" class="text-button">BUILD · 0</button><span>THE SUNKEN VAULT</span><button id="map" class="text-button">EXPEDITION</button></div><div class="inventory" id="inventory"></div><div class="hint">DRAG TO AIM · COLLECT THROUGH THE LEFT CHUTE</div>
+  <header class="game-header">
+    <div class="brand" aria-label="Clawbound">
+      <span class="brand-mark" aria-hidden="true"><svg class="ui-icon" aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v6m-3 0h6M9 8 5 15l3 5 3-2m4-10 4 7-3 5-3-2"/></svg></span>
+      CLAW<b>BOUND</b>
+    </div>
+    <div class="top-actions">
+      <div class="coin-counter" aria-label="Coins"><i class="coin-icon" aria-hidden="true"></i><span id="coins">0</span></div>
+      <button type="button" class="icon-button" id="sound" aria-label="Mute sound" aria-pressed="true" data-muted="false">
+        <svg class="ui-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m11 5-5 4H3v6h3l5 4Z"/><g class="sound-waves"><path d="M15 8a6 6 0 0 1 0 8M18 5a10 10 0 0 1 0 14"/></g><path class="sound-slash" d="m16 9 5 6m0-6-5 6"/></svg>
+      </button>
+      <button type="button" class="icon-button" id="help" aria-label="How to play" aria-haspopup="dialog" aria-controls="modal">
+        <svg class="ui-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M9.5 9a2.5 2.5 0 1 1 4 2c-1 .6-1.5 1.2-1.5 2"/><circle cx="12" cy="16" r=".8" fill="currentColor" stroke="none"/></svg>
+      </button>
+      <button type="button" class="icon-button" id="pause" aria-label="Pause game" aria-haspopup="dialog" aria-controls="modal">
+        <svg class="ui-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M8 6v12M16 6v12"/></svg>
+      </button>
+    </div>
+  </header>
+  <div class="route" aria-label="Expedition progress"><span class="floor" id="floor">CHAMBER 01</span><div class="route-line" aria-hidden="true"></div><span id="zone">MOSSY OUTPOST</span><div class="route-dots" id="routeDots" aria-hidden="true"></div></div>
+  <div class="arena-wrap">
+    <section class="battle" aria-label="Battle arena">
+      <canvas id="battleCanvas" role="img" aria-label="Your salvager faces the vault's defenders"></canvas>
+      <div class="fighter-labels">
+        <div class="fighter"><div class="name" id="heroName">YOU · SCRAPPER</div><div class="health-line"><div class="bar"><i id="heroBar"></i></div><span class="hp-value" id="heroHp" aria-label="Your health">40/40</span></div></div>
+        <div class="fighter enemy"><div class="name" id="enemyName">MOSS MUNCHER</div><div class="health-line"><span class="hp-value" id="enemyHp" aria-label="Enemy health">24/24</span><div class="bar"><i id="enemyBar"></i></div></div></div>
+      </div>
+      <div class="battle-tag" aria-hidden="true">VS</div>
+      <div class="shield-badge" id="shield">0 BLOCK</div>
+      <div class="intent" id="intent">Next attack · 4</div>
+    </section>
+    <div class="status" id="status" role="status" aria-live="polite" aria-atomic="true">Slide to aim. Scoop a handful.</div>
+  </div>
+  <section class="machine" aria-label="Claw machine">
+    <div class="machine-top"><div class="machine-title"><i class="led" aria-hidden="true"></i>LOOT CHAMBER</div><div class="machine-stat"><b id="drops">6</b> DROPS LEFT</div></div>
+    <div class="glass"><canvas id="machineCanvas" aria-label="Claw playfield. Drag and release to grab. Tap Close Now during descent to choose depth."></canvas></div>
+    <div class="machine-foot"><span id="clawLabel">BRASS CLAW</span><div class="capacity" id="capacity" aria-label="Grip strength"></div><span id="load">0 IN SCOOP</span></div>
+  </section>
+  <div class="controls" role="group" aria-label="Claw controls">
+    <button type="button" class="move" id="left" aria-label="Move claw left"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5 8 12l7 7" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <button type="button" class="drop" id="drop"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2v6m-3 0h6M9 8 5 15l3 5 3-2m4-10 4 7-3 5-3-2"/></svg><span id="dropLabel">GRAB</span></button>
+    <button type="button" class="move" id="right" aria-label="Move claw right"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+  </div>
+  <nav class="run-strip" aria-label="Expedition tools"><button type="button" id="build" class="text-button" aria-haspopup="dialog" aria-controls="modal">BUILD · 0</button><span>THE SUNKEN VAULT</span><button type="button" id="map" class="text-button" aria-haspopup="dialog" aria-controls="modal">EXPEDITION</button></nav>
+  <div class="inventory" id="inventory" aria-label="Equipped relics"></div>
+  <div class="hint">DRAG TO AIM · COLLECT THROUGH THE LEFT CHUTE</div>
 </main>
-<dialog id="modal" aria-labelledby="modalTitle"><div class="modal-eyebrow" id="modalEyebrow"></div><h1 class="modal-title" id="modalTitle"></h1><div class="modal-copy" id="modalCopy"></div><div id="modalExtra"></div><div class="choices" id="choices"></div></dialog>
-<script src="physics.js?v=20260925-1"></script>
-<script src="progression.js?v=20260925-1"></script>
-<script src="art.js?v=20260925-1"></script>
-<script src="loot.js?v=20260925-1"></script>
-<script src="game.js?v=20260925-1"></script>
-<script>if ('serviceWorker' in navigator && !window.Capacitor?.isNativePlatform?.()) { window.addEventListener('load', () => navigator.serviceWorker.register('sw.js?v=20260925-1').catch(() => {})); }</script>
-</body></html>
+<dialog id="modal" aria-labelledby="modalTitle" aria-describedby="modalCopy">
+  <div class="modal-eyebrow" id="modalEyebrow"></div>
+  <h1 class="modal-title" id="modalTitle"></h1>
+  <div class="modal-copy" id="modalCopy"></div>
+  <div id="modalExtra"></div>
+  <div class="choices" id="choices"></div>
+</dialog>
+<script src="physics.js?v=20260925-2"></script>
+<script src="progression.js?v=20260925-2"></script>
+<script src="art.js?v=20260925-2"></script>
+<script src="loot.js?v=20260925-2"></script>
+<script src="game.js?v=20260925-2"></script>
+<script>if ('serviceWorker' in navigator && !window.Capacitor?.isNativePlatform?.()) { window.addEventListener('load', () => navigator.serviceWorker.register('sw.js?v=20260925-2').catch(() => {})); }</script>
+</body>
+</html>

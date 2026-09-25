@@ -1,0 +1,140 @@
+{
+  "version": 4,
+  "source": "exec-81734e8a-be8d-4679-bdc4-38ca839e9eae.png",
+  "sprites": {
+    "hero": {
+      "file": "assets/art-v4/hero.webp",
+      "width": 390,
+      "height": 384,
+      "sourceRect": [
+        28,
+        16,
+        416,
+        410
+      ],
+      "anchor": [
+        0.5,
+        0.995
+      ],
+      "bytes": 51954
+    },
+    "slime": {
+      "file": "assets/art-v4/slime.webp",
+      "width": 412,
+      "height": 384,
+      "sourceRect": [
+        478,
+        69,
+        373,
+        348
+      ],
+      "anchor": [
+        0.5,
+        0.995
+      ],
+      "bytes": 35904
+    },
+    "beetle": {
+      "file": "assets/art-v4/beetle.webp",
+      "width": 539,
+      "height": 384,
+      "sourceRect": [
+        860,
+        84,
+        469,
+        334
+      ],
+      "anchor": [
+        0.5,
+        0.995
+      ],
+      "bytes": 52282
+    },
+    "ghost": {
+      "file": "assets/art-v4/ghost.webp",
+      "width": 373,
+      "height": 384,
+      "sourceRect": [
+        1379,
+        23,
+        377,
+        388
+      ],
+      "anchor": [
+        0.5,
+        0.995
+      ],
+      "bytes": 38770
+    },
+    "golem": {
+      "file": "assets/art-v4/golem.webp",
+      "width": 421,
+      "height": 384,
+      "sourceRect": [
+        17,
+        446,
+        463,
+        422
+      ],
+      "anchor": [
+        0.5,
+        0.995
+      ],
+      "bytes": 49690
+    },
+    "root": {
+      "file": "assets/art-v4/root.webp",
+      "width": 350,
+      "height": 384,
+      "sourceRect": [
+        483,
+        433,
+        396,
+        435
+      ],
+      "anchor": [
+        0.5,
+        0.995
+      ],
+      "bytes": 55860
+    },
+    "prism": {
+      "file": "assets/art-v4/prism.webp",
+      "width": 348,
+      "height": 384,
+      "sourceRect": [
+        911,
+        428,
+        398,
+        439
+      ],
+      "anchor": [
+        0.5,
+        0.995
+      ],
+      "bytes": 51550
+    },
+    "astral": {
+      "file": "assets/art-v4/astral.webp",
+      "width": 370,
+      "height": 384,
+      "sourceRect": [
+        1334,
+        433,
+        417,
+        433
+      ],
+      "anchor": [
+        0.5,
+        0.995
+      ],
+      "bytes": 51386
+    }
+  },
+  "background": {
+    "file": "assets/art-v4/vault.webp",
+    "width": 1260,
+    "height": 450,
+    "stageBaseline": 0.86
+  }
+}
