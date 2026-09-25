@@ -113,3 +113,21 @@ dialog{background-image:radial-gradient(ellipse at 18% 0,#76a97014,transparent 5
 #modal[data-mode="reward"] .modal-title{text-align:center;text-shadow:0 2px 10px #041c2680}
 #modal[data-mode="reward"] .modal-copy{text-align:center}
 @media(max-height:590px){#modal[data-mode="reward"]{padding-top:50px}}
+/* Reward choices must be comparable together on a compact phone. The full map remains in Expedition. */
+@media(max-height:660px){
+ #modal[data-mode="reward"]{padding-top:45px;padding-bottom:18px}
+ #modal[data-mode="reward"] .chapter-map{display:none}
+ #modal[data-mode="reward"] .modal-eyebrow{font-size:9px;letter-spacing:1.3px}
+ #modal[data-mode="reward"] .modal-title{font-size:34px;line-height:1;margin:8px 0 9px}
+ #modal[data-mode="reward"] .modal-copy{font-size:12px;line-height:1.45;margin-bottom:12px}
+ #modal[data-mode="reward"] .choices{gap:8px}
+ #modal[data-mode="reward"] .choice{min-height:68px;padding:10px;gap:9px}
+}
+@media(max-height:590px){
+ #modal[data-mode="reward"]{padding-top:42px;padding-bottom:16px}
+ #modal[data-mode="reward"] .modal-title{font-size:32px;margin:7px 0 8px}
+ #modal[data-mode="reward"] .modal-copy{font-size:11px;line-height:1.45;margin-bottom:10px}
+ #modal[data-mode="reward"] .choice{min-height:66px;padding:9px 10px}
+ #modal[data-mode="reward"] .choice b{font-size:13px}
+ #modal[data-mode="reward"] .choice small{font-size:11px;line-height:1.4;margin-top:4px}
+}
