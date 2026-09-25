@@ -2,6 +2,7 @@
 const $=s=>document.querySelector(s), machine=$('#machineCanvas'), battle=$('#battleCanvas'),ctx=machine.getContext('2d'),art=battle.getContext('2d');
 const MW=420,MH=340,LEFT=12,RIGHT=408,FLOOR=326,STEP=1/120,CHUTE=84;
 const P=ClawProgression, A=ClawArt;
+const iconMark=mark=>window.ClawIcons?.mark(mark)??String(mark??'');
 const engine=ClawPhysics.create({left:LEFT,right:RIGHT,floor:FLOOR,chuteRight:CHUTE,dividerTop:145});
 let battleFx=[],delivered=[],totals={damage:0,block:0,heal:0,coins:0},contactInfo={},lastDelivery=0,gripCount=0;
 let run,claw,balls=[],effects=[],floaters=[],phase='aim',phaseTime=0,clock=0,last=0,accumulator=0,paused=false,modalMode='',leftHeld=false,rightHeld=false,aimTarget=null,shake=0,battlePulse=0,enemyPulse=0,combo=0,comboTime=0,best=0,pendingDrop=false;
@@ -71,7 +72,7 @@ function updateUI(){
  $('#inventory').replaceChildren();
  Object.entries(run.relics).slice(-3).forEach(([id,count])=>{
   const u=P.UPGRADES.find(u=>u.id===id); if(!u)return;
-  const el=document.createElement('span');el.className='relic-tag';el.textContent=`${u.mark} ${u.name}${count>1?' ×'+count:''}`;$('#inventory').append(el);
+  const el=document.createElement('span');el.className='relic-tag';el.innerHTML=`${iconMark(u.mark)} <span>${u.name}${count>1?' ×'+count:''}</span>`;$('#inventory').append(el);
  });
  $('#build').textContent=`BUILD · ${Object.values(run.relics).reduce((a,b)=>a+b,0)}`;
 }
@@ -216,7 +217,7 @@ function enemyAttack(){
  setPhase('enemy');checkpoint();
 }
 function mapMarkup(){
- return `<div class="chapter-map" aria-label="Campaign progress">${Array.from({length:12},(_,i)=>`<span class="map-node ${i+1<run.floor?'done':i+1===run.floor?'current':''} ${(i+1)%4===0?'boss':''}">${i+1<run.floor?'✓':(i+1)%4===0?'♜':i+1}</span>`).join('')}</div>`;
+ return `<div class="chapter-map" aria-label="Campaign progress">${Array.from({length:12},(_,i)=>`<span class="map-node ${i+1<run.floor?'done':i+1===run.floor?'current':''} ${(i+1)%4===0?'boss':''}">${i+1<run.floor?iconMark('✓'):(i+1)%4===0?iconMark('♜'):i+1}</span>`).join('')}</div>`;
 }
 function reward(){
  if(run.stage!=='reward'){
@@ -439,12 +440,12 @@ function resizeCanvas(canvas,g,w,h){const dpr=Math.min(window.devicePixelRatio||
 function render(){resizeCanvas(machine,ctx,MW,MH);resizeCanvas(battle,art,420,180);drawMachine();drawBattle();if(modalMode==='welcome')drawTitleArt()}
 function frame(t){if(document.hidden){last=t;requestAnimationFrame(frame);return;}const dt=Math.min(.05,(t-last)/1000||STEP);last=t;uiClock+=dt;accumulator+=dt;while(accumulator>=STEP){update(STEP);accumulator-=STEP}render();requestAnimationFrame(frame)}
 function closeModal(){if($('#modal').open)$('#modal').close();paused=false;modalMode='';leftHeld=rightHeld=false;aimTarget=null;$('#pause').setAttribute('aria-label','Pause expedition')}
-function openModal(mode,eyebrow,title,copy,choices,extra=''){paused=true;pendingDrop=false;modalMode=mode;$('#modal').setAttribute('data-mode',mode);leftHeld=rightHeld=false;aimTarget=null;$('#modalEyebrow').textContent=eyebrow;$('#modalTitle').textContent=title;$('#modalCopy').innerHTML=copy;$('#modalExtra').innerHTML=extra;$('#choices').replaceChildren();for(const choice of choices){const b=document.createElement('button');b.className='choice';b.innerHTML=`<span class="choice-mark">${choice.mark}</span><span><b>${choice.title}</b><small>${choice.desc||''}</small></span><span class="arrow">›</span>`;b.disabled=!!choice.disabled;b.style.setProperty?.('--choice-index',$('#choices').children.length);b.onclick=()=>{sound('ui');choice.action()};$('#choices').append(b)}if(!$('#modal').open)$('#modal').showModal();updateUI()}
+function openModal(mode,eyebrow,title,copy,choices,extra=''){paused=true;pendingDrop=false;modalMode=mode;$('#modal').setAttribute('data-mode',mode);leftHeld=rightHeld=false;aimTarget=null;$('#modalEyebrow').textContent=eyebrow;$('#modalTitle').textContent=title;$('#modalCopy').innerHTML=copy;$('#modalExtra').innerHTML=extra;$('#choices').replaceChildren();for(const choice of choices){const b=document.createElement('button');b.className='choice';b.innerHTML=`<span class="choice-mark">${iconMark(choice.mark)}</span><span><b>${choice.title}</b><small>${choice.desc||''}</small></span><span class="arrow">${iconMark('→')}</span>`;b.disabled=!!choice.disabled;b.style.setProperty?.('--choice-index',$('#choices').children.length);b.onclick=()=>{sound('ui');choice.action()};$('#choices').append(b)}if(!$('#modal').open)$('#modal').showModal();updateUI()}
 function help(back){
  if(paused&&!back)return;
  openModal('help','THE SALVAGER’S FIELD GUIDE','Aim. Scoop. Survive.','Drag across the glass and release to grab, or aim with the arrows and press Grab. While descending, tap Close Now to choose the depth. Swords, shields, gems, and coins tumble differently. Each finger slows under resistance as it wraps around the pile; loose pieces can slip. Only treasure delivered down the left chute powers your machine.',[
  {mark:'✓',title:back?'Back to the vault':'Keep playing',desc:'Watch the enemy’s next move before you grab.',action:back||(()=>{closeModal();updateUI()})}
- ],`<div class="legend">${Object.entries(TYPES).map(([id,t])=>`<div class="legend-row"><span class="sample" style="background:${t.color};color:${t.dark}">${{sword:'⚔',shield:'◇',heart:'♥',spark:'ϟ',coin:'●',stone:'▪'}[id]}</span><span>${t.name} · ${{sword:4+run.blade+' damage',shield:4+run.block+' block',heart:3+(run.healBonus||0)+' healing',spark:6+run.spark+' damage',coin:2+(run.coinBonus||0)+' coins',stone:1+(run.salvage||0)+' damage'}[id]}</span></div>`).join('')}</div><p class="modal-copy">Shields carry between attacks. Clear chambers to choose upgrades. Routes offer healing, merchants, or tougher enemies with better rewards. Defeat the guardians in chambers 4, 8, and 12.</p>`);
+ ],`<div class="legend">${Object.entries(TYPES).map(([id,t])=>`<div class="legend-row"><span class="sample" style="background:${t.color};color:${t.dark}">${iconMark({sword:'⚔',shield:'◇',heart:'♥',spark:'ϟ',coin:'●',stone:'▪'}[id])}</span><span>${t.name} · ${{sword:4+run.blade+' damage',shield:4+run.block+' block',heart:3+(run.healBonus||0)+' healing',spark:6+run.spark+' damage',coin:2+(run.coinBonus||0)+' coins',stone:1+(run.salvage||0)+' damage'}[id]}</span></div>`).join('')}</div><p class="modal-copy">Shields carry between attacks. Clear chambers to choose upgrades. Routes offer healing, merchants, or tougher enemies with better rewards. Defeat the guardians in chambers 4, 8, and 12.</p>`);
 }
 function showWorkshop(back=showLoadouts){
  const meta=P.loadMeta();
@@ -457,7 +458,7 @@ function showBuild(){
  if(paused)return;
  openModal('build','YOUR MACHINE','Anatomy of a salvager.',`Health ${run.hp}/${run.maxHp} · Grip ${Math.round(run.grip*100)}%`,[
  {mark:'✓',title:'Return to the machine',action:()=>{closeModal();updateUI()}}
- ],`<div class="legend">${Object.entries(run.relics).map(([id,count])=>{const u=P.upgradeById(id);return u?`<div class="legend-row"><span class="choice-mark">${u.mark}</span><span><b>${u.name} ×${count}</b><br>${u.desc}</span></div>`:''}).join('')||'<p class="modal-copy">Clear your first chamber to choose an upgrade.</p>'}</div>`);
+ ],`<div class="legend">${Object.entries(run.relics).map(([id,count])=>{const u=P.upgradeById(id);return u?`<div class="legend-row"><span class="choice-mark">${iconMark(u.mark)}</span><span><b>${u.name} ×${count}</b><br>${u.desc}</span></div>`:''}).join('')||'<p class="modal-copy">Clear your first chamber to choose an upgrade.</p>'}</div>`);
 }
 function showMap(){
  if(paused)return;

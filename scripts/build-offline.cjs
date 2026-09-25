@@ -3,7 +3,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
 const root = path.resolve(__dirname, '..');
-const files = ['index.html', 'styles.css', 'physics.js', 'progression.js', 'art.js', 'loot.js', 'game.js', 'privacy.html', 'manifest.webmanifest', 'icon.svg'];
+const files = ['index.html', 'styles.css', 'physics.js', 'progression.js', 'art.js', 'loot.js', 'icons.js', 'game.js', 'privacy.html', 'manifest.webmanifest', 'icon.svg'];
 function assets(dir) {
   if (!fs.existsSync(path.join(root, dir))) return;
   for (const name of fs.readdirSync(path.join(root, dir)).sort()) {

@@ -4,7 +4,7 @@ const path = require('node:path');
 const crypto = require('node:crypto');
 const root = path.resolve(__dirname, '..');
 const out = path.join(root, 'mobile', 'www');
-const required = ['index.html', 'styles.css', 'physics.js', 'progression.js', 'art.js', 'loot.js', 'game.js', 'privacy.html', 'manifest.webmanifest', 'icon.svg'];
+const required = ['index.html', 'styles.css', 'physics.js', 'progression.js', 'art.js', 'loot.js', 'icons.js', 'game.js', 'privacy.html', 'manifest.webmanifest', 'icon.svg'];
 for (const name of required) {
   if (!fs.existsSync(path.join(root, name))) throw new Error(`Required release asset missing: ${name}`);
 }
