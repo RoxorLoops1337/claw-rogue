@@ -62,3 +62,47 @@ jobs:
           path: mobile/android/app/build/outputs/bundle/release/*.aab
           if-no-files-found: error
           retention-days: 14
+
+  ios:
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+      - name: Install native dependencies
+        working-directory: mobile
+        run: npm ci
+      - name: Bundle local game assets
+        working-directory: mobile
+        run: npm run ios:prepare
+      - name: Verify Xcode project and shared scheme
+        working-directory: mobile/ios/App
+        run: |
+          xcodebuild -version
+          xcodebuild -list -json -project App.xcodeproj > "$RUNNER_TEMP/clawbound-xcode-project.json"
+          node -e 'const fs=require("node:fs"); const p=JSON.parse(fs.readFileSync(process.env.RUNNER_TEMP+"/clawbound-xcode-project.json","utf8")); if(!p.project.schemes.includes("App")) throw new Error("App scheme missing"); console.log("Verified App scheme");'
+      - name: Compile unsigned iOS release archive
+        working-directory: mobile/ios/App
+        run: |
+          xcodebuild archive \
+            -project App.xcodeproj \
+            -scheme App \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            -archivePath "$RUNNER_TEMP/Clawbound.xcarchive" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO
+          test -d "$RUNNER_TEMP/Clawbound.xcarchive/Products/Applications/App.app"
+          tar -czf "$RUNNER_TEMP/clawbound-unsigned-ios.xcarchive.tar.gz" -C "$RUNNER_TEMP" Clawbound.xcarchive
+      - name: Retain unsigned archive for signing
+        uses: actions/upload-artifact@v4
+        with:
+          name: clawbound-unsigned-ios-archive
+          path: ${{ runner.temp }}/clawbound-unsigned-ios.xcarchive.tar.gz
+          if-no-files-found: error
+          retention-days: 14
