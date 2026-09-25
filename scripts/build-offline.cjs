@@ -22,7 +22,7 @@ const CACHE = 'clawbound-${revision}';
 const FILES = ${JSON.stringify(files, null, 2)};
 const URLS = new Set(FILES.map(name => new URL(name, self.registration.scope).href));
 self.addEventListener('install', event => {
-  event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(FILES.map(name => new Request(new URL(name, self.registration.scope), {cache: 'reload'})))));
+  event.waitUntil(caches.open(CACHE).then(cache => Promise.all(FILES.map(async name => { const key = new URL(name, self.registration.scope); const fresh = new URL(key); fresh.searchParams.set('release', CACHE); const response = await fetch(new Request(fresh, {cache: 'reload'})); if (!response.ok) throw new Error('Missing release asset: ' + name); await cache.put(key, response); }))));
   // Leave the previous game running. Activate after its tabs have been closed.
 });
 self.addEventListener('activate', event => {
