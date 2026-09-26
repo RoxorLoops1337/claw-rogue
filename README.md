@@ -4,7 +4,9 @@ A complete, dependency-free browser roguelike built around a physical claw machi
 
 **Play:** https://roxorloops1337.github.io/claw-rogue/
 
-Drag and release on the glass to aim and grab, or hold the arrow buttons and press Grab. Tap Close Now during descent to select your scoop depth. You can queue the next aim during delivery. Keyboard: A/D or arrows, Space to grab, Escape to pause. Only treasures that fall through the left delivery chute apply their effects. Sound can be toggled in the header.
+Drag and release on the glass to aim and grab, or hold the arrow buttons and press Grab. Every grab automatically lowers fully into the loot, closes, lifts and delivers. Further taps cannot interrupt descent. You can queue the next aim during delivery. Keyboard: A/D or arrows, Space to grab, Escape to pause. Only treasures that fall through the left delivery chute apply their effects. Sound can be toggled in the header.
+
+Use `play.html` for a fresh launch that migrates older offline versions while preserving saved progress.
 
 ## The expedition
 
@@ -20,7 +22,7 @@ Drag and release on the glass to aim and grab, or hold the arrow buttons and pre
 
 Compound rigid bodies give swords and vials long silhouettes, while shields and scrap have rounded clusters. Each articulated finger slows independently under contact pressure, wrapping around the pile as it settles. Contact impulses, friction, spin, and gravity carry the load; items are never attached to an invisible basket. Floor contact supports natural rolling. Widening the claw changes its geometry, while grip upgrades change contact friction. The mobile canvas keeps its aspect ratio so balls remain circular.
 
-An original sculpted enamel-and-brass art direction unifies eight generated characters, the vault, the claw, physical loot, and 23 custom interface icons. Characters have distinct idle, attack, recoil and defeat animation; loot triggers material-specific projectiles and impact effects. Self-hosted Manrope and Barlow Condensed typefaces and tactile gold controls work offline. The current art bible and generation prompts are in `assets/art-v4/PROMPTS.md`; font licenses are under `fonts/`. Procedural sound has no network dependencies. Reduced-motion preferences are respected.
+An original sculpted enamel-and-brass art direction unifies eight generated characters, the vault, the claw, physical loot, and 23 custom interface icons. Characters have distinct idle, attack, recoil and defeat animation; loot triggers material-specific projectiles and impact effects. Self-hosted Manrope and Barlow Condensed typefaces and tactile gold controls work offline. Sixteen additional generated production assets extend that style into six physical loot illustrations, three biome stages, the cabinet interior, gold/teal button surfaces, panel material, a workshop scene, reward frame and crest. Loot drawings remain clipped to their actual physical shapes. Utility symbols remain vector for tiny-screen clarity. Art direction and prompts are in `assets/art-v4/PROMPTS.md` and `assets/art-v5/*PROMPTS.md` / `assets/art-v5/*prompts.md`; font licenses are under `fonts/`. Procedural sound has no network dependencies. Reduced-motion preferences are respected.
 
 Inspired by the author's [Claw Crawl](https://games-71g.pages.dev/claw_crawl/).
 
@@ -51,7 +53,7 @@ Physics tests cover rolling, free release, actual moving-surface carry, pile sta
 
 The campaign transition test injects defeats to isolate progression logic; the balance script runs actual physical grabs. Automated checks and desktop phone-size previews do not replace testing on physical Android and iOS devices.
 
-Current release verification: [1.1.0 visual release](release/VALIDATION_V4.md).
+Current release verification: [1.1.1 descent fix and expanded art](release/VALIDATION_V5.md). Previous visual release: [1.1.0](release/VALIDATION_V4.md).
 
 ## Native release
 

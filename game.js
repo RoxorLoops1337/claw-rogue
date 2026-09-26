@@ -59,16 +59,16 @@ function updateUI(){
  const intent=P.intentFor(run.enemy,run.turn||0);
  $('#intent').textContent=intent.label+(run.enemy.armor?` · ${run.enemy.armor} ARMOR`:'');
  $('#drops').textContent=run.drops;
- $('#drop').disabled=paused||!(phase==='aim'||canCloseGrip());
+ $('#drop').disabled=paused||phase!=='aim';
  $('#left').disabled=$('#right').disabled=phase!=='aim'||paused;
- $('#dropLabel').textContent=paused?'PAUSED':({aim:'GRAB',down:canCloseGrip()?'CLOSE NOW':'LOWERING',close:'SCOOPING',up:'LIFTING',carry:'DELIVERING',release:'LOOT!',resolve:'YOUR TURN',enemy:'INCOMING',return:'RETURNING',reward:'CHAMBER CLEAR',over:'RUN COMPLETE'}[phase]||'GRAB');
+ $('#dropLabel').textContent=paused?'PAUSED':({aim:'GRAB',down:'LOWERING',close:'SCOOPING',up:'LIFTING',carry:'DELIVERING',release:'LOOT!',resolve:'YOUR TURN',enemy:'INCOMING',return:'RETURNING',reward:'CHAMBER CLEAR',over:'RUN COMPLETE'}[phase]||'GRAB');
  $('#clawLabel').textContent=run.size>=2?'TITAN CLAW':run.size?'WIDE CLAW':'BRASS CLAW';
  $('#load').textContent=(phase==='close'||(phase==='up'&&phaseTime<.4))?'SETTLING…':claw.held.length+' IN SCOOP';
- $('#drop').classList.toggle('is-closing',canCloseGrip());
+ $('#drop').classList.toggle('is-closing',false);
  $('#capacity').setAttribute('aria-label',`Grip strength: ${Math.round(run.grip*100)} percent`);
  $('#capacity').innerHTML=Array.from({length:5},(_,i)=>`<i class="${i<Math.round(run.grip*3)?'loaded':''}"></i>`).join('');
  $('#routeDots').innerHTML=Array.from({length:12},(_,i)=>`<i class="route-dot ${i+1<run.floor?'done':i+1===run.floor?'current':''} ${(i+1)%4===0?'boss':''}"></i>`).join('');
- $('.hint').textContent='DRAG & RELEASE TO GRAB · TAP CLOSE NOW TO CHOOSE DEPTH';
+ $('.hint').textContent='AIM & GRAB · THE CLAW LOWERS AUTOMATICALLY';
  $('#inventory').replaceChildren();
  Object.entries(run.relics).slice(-3).forEach(([id,count])=>{
   const u=P.UPGRADES.find(u=>u.id===id); if(!u)return;
@@ -124,16 +124,15 @@ function jawSegments(){
  jawPoints().forEach((jaw,index)=>{for(let i=0;i<jaw.length-1;i++)segments.push({ax:jaw[i].x,ay:jaw[i].y,bx:jaw[i+1].x,by:jaw[i+1].y,r:3.6*clawScale(),side:index===0?-1:1,id:`jaw-${index}-${i}`})});
  segments.push({ax:claw.x-6,ay:claw.y,bx:claw.x+6,by:claw.y,r:9*clawScale(),side:0,id:'hub'});return segments;
 }
-// Repeated taps must not turn GRAB into CLOSE NOW before the motor has moved.
-// Gate on actual travel, so slow frames and restored drops behave the same.
-const MIN_CLOSE_DESCENT=70;
-function canCloseGrip(){return phase==='down'&&claw.y-(Number.isFinite(claw.dropStartY)?claw.dropStartY:40)>=MIN_CLOSE_DESCENT;}
+// Closing is exclusively automatic at the bottom of the descent.
+// All grab inputs are ignored while lowering, independent of input timing.
+function canCloseGrip(){return phase==='down'&&claw.y>=claw.depth;}
 function closeGrip(){
  if(!canCloseGrip()||paused)return;
  claw.haltL=claw.haltR=false;setPhase('close');sound('grip');haptic(12);message('The fingers close around the pile.');
 }
 function drop(){
- if(phase==='down'){closeGrip();return;}
+ if(phase==='down')return;
  if(phase!=='aim'||paused||run.drops<1)return;
  if(aimTarget!==null&&Math.abs(claw.x-aimTarget)>2){pendingDrop=true;return;}
  pendingDrop=false;run.drops--;leftHeld=rightHeld=false;aimTarget=null;
@@ -272,11 +271,13 @@ function credit(){
 }
 function checkpoint(){
  if(!started||!run||run.stage==='over')return;
- P.saveRun({run,claw:{...claw,held:[]},balls,phase,phaseTime,clock,delivered,totals,lastDelivery});
+ P.saveRun({run,claw:{...claw,held:[],contactPressure:contactInfo.jawPressure},balls,phase,phaseTime,clock,delivered,totals,lastDelivery});
 }
 function restore(snapshot){
  run=snapshot.run;claw={...snapshot.claw,held:[],pL:snapshot.claw.pL??(-.1+.72*snapshot.claw.open),pR:snapshot.claw.pR??(-.1+.72*snapshot.claw.open),haltL:!!snapshot.claw.haltL,haltR:!!snapshot.claw.haltR,vx:snapshot.claw.vx||0,vy:snapshot.claw.vy||0};pendingDrop=false;balls=snapshot.balls;phase=snapshot.phase;phaseTime=snapshot.phaseTime||0;
+ if(phase==='close'&&claw.y<claw.depth){phase='down';phaseTime=0;claw.open=1;claw.pL=claw.pR=PHI_OPEN;claw.haltL=claw.haltR=false;claw.vy=0;}
  clock=snapshot.clock||0;delivered=snapshot.delivered||[];totals=snapshot.totals||{damage:0,block:0,heal:0,coins:0};lastDelivery=snapshot.lastDelivery||0;
+ const pressure=claw.contactPressure||{};contactInfo={jawPressure:{left:Number.isFinite(pressure.left)?Math.max(0,pressure.left):0,right:Number.isFinite(pressure.right)?Math.max(0,pressure.right):0}};
  effects=[];floaters=[];battleFx=[];heroAttack=0;engine.reset(jawSegments());started=true;closeModal();updateUI();
  if(run.stage==='reward')reward();else if(run.stage==='route')showRoute();else if(run.stage==='shop')showShop();else if(phase==='enemy'&&run.drops<=0&&phaseTime>.5)credit();
  else message('Expedition restored. Your next move awaits.');
@@ -311,11 +312,8 @@ if(phase==='return'){
  if(Math.abs(goal-claw.x)<.1){setPhase('aim');message('Drag and release to grab. Choose a cluster you can wrap around.');if(pendingDrop)drop()}
 }
 if(phase==='down'){
- const wasArmed=canCloseGrip();
  claw.vy=Math.min(230,(claw.vy||0)+1800*dt);claw.y=Math.min(claw.depth,claw.y+claw.vy*dt);
- if(!wasArmed&&canCloseGrip()){updateUI();message('Tap CLOSE NOW to choose your grabbing depth.');}
- claw.contactTime=canCloseGrip()&&(contactInfo.touchedIds||[]).includes('hub')?claw.contactTime+dt:0;
- if(claw.y>=claw.depth||claw.contactTime>.018)closeGrip();
+ if(claw.y>=claw.depth)closeGrip();
 }
 if(phase==='close'){
  const pressure=contactInfo.jawPressure||{};
@@ -449,7 +447,7 @@ function closeModal(){if($('#modal').open)$('#modal').close();paused=false;modal
 function openModal(mode,eyebrow,title,copy,choices,extra=''){paused=true;pendingDrop=false;modalMode=mode;$('#modal').setAttribute('data-mode',mode);leftHeld=rightHeld=false;aimTarget=null;$('#modalEyebrow').textContent=eyebrow;$('#modalTitle').textContent=title;$('#modalCopy').innerHTML=copy;$('#modalExtra').innerHTML=extra;$('#choices').replaceChildren();for(const choice of choices){const b=document.createElement('button');b.className='choice';b.innerHTML=`<span class="choice-mark">${iconMark(choice.mark)}</span><span><b>${choice.title}</b><small>${choice.desc||''}</small></span><span class="arrow">${iconMark('→')}</span>`;b.disabled=!!choice.disabled;b.style.setProperty?.('--choice-index',$('#choices').children.length);b.onclick=()=>{sound('ui');choice.action()};$('#choices').append(b)}if(!$('#modal').open)$('#modal').showModal();updateUI()}
 function help(back){
  if(paused&&!back)return;
- openModal('help','THE SALVAGER’S FIELD GUIDE','Aim. Scoop. Survive.','Drag across the glass and release to grab, or aim with the arrows and press Grab. While descending, tap Close Now to choose the depth. Swords, shields, gems, and coins tumble differently. Each finger slows under resistance as it wraps around the pile; loose pieces can slip. Only treasure delivered down the left chute powers your machine.',[
+ openModal('help','THE SALVAGER’S FIELD GUIDE','Aim. Scoop. Survive.','Drag across the glass and release to grab, or aim with the arrows and press Grab. Each grab lowers fully into the loot, then closes and lifts automatically. Repeated taps cannot interrupt the descent. Swords, shields, gems, and coins tumble differently. Each finger slows under resistance as it wraps around the pile; loose pieces can slip. Only treasure delivered down the left chute powers your machine.',[
  {mark:'✓',title:back?'Back to the vault':'Keep playing',desc:'Watch the enemy’s next move before you grab.',action:back||(()=>{closeModal();updateUI()})}
  ],`<div class="legend">${Object.entries(TYPES).map(([id,t])=>`<div class="legend-row"><span class="sample" style="background:${t.color};color:${t.dark}">${iconMark({sword:'⚔',shield:'◇',heart:'♥',spark:'ϟ',coin:'●',stone:'▪'}[id])}</span><span>${t.name} · ${{sword:4+run.blade+' damage',shield:4+run.block+' block',heart:3+(run.healBonus||0)+' healing',spark:6+run.spark+' damage',coin:2+(run.coinBonus||0)+' coins',stone:1+(run.salvage||0)+' damage'}[id]}</span></div>`).join('')}</div><p class="modal-copy">Shields carry between attacks. Clear chambers to choose upgrades. Routes offer healing, merchants, or tougher enemies with better rewards. Defeat the guardians in chambers 4, 8, and 12.</p>`);
 }
@@ -493,7 +491,7 @@ function aim(e){
 }
 machine.addEventListener('pointerdown',e=>{
  if(paused)return;
- if(phase==='down'){closeGrip();return;}
+ if(phase==='down')return;
  if(!['aim','up','carry','release','return'].includes(phase))return;
  e.preventDefault();dragging=true;dragStart=e.clientX;dragMoved=false;machine.setPointerCapture(e.pointerId);aim(e);
 });

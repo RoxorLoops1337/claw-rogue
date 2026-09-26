@@ -24,46 +24,30 @@ t.newRun();t.drop();advance(.25);t.pause();const frozen=t.get().claw.y;advance(1
 t.newRun();t.get().run.size=3;t.get().run.capacity=8;t.startFloor();assert.ok(playDrop(245)>=1,'large claw can deliver');
 t.newRun();t.get().balls.length=0;assert.equal(playDrop(245),0,'empty grab completes without inventing cargo');assert.ok(t.get().run.hp<t.get().run.maxHp,'empty grab gives enemy a turn');
 
-// The same main button changes to Close Now during descent. It must stop at
-// the player's chosen height, without charging a second drop or teleporting.
-t.newRun();
-const beforeManual=t.get().run.drops;
-els.get('#drop').onclick();advance(.4);
-assert.equal(t.get().phase,'down');
-const chosenDepth=t.get().claw.y;
-els.get('#drop').onclick();
-assert.equal(t.get().phase,'close','Close Now immediately starts the squeeze');
-assert.equal(t.get().run.drops,beforeManual-1,'manual closure never spends another drop');
-advance(.1);
-assert.equal(t.get().claw.y,chosenDepth,'manual closure preserves the selected height');
-let manualFrames=0;
-while(!['aim','reward','over'].includes(t.get().phase)&&!t.get().paused&&manualFrames++<1800)t.update(1/120);
-assert.ok(manualFrames<1800,'a deliberately early manual closure completes normally');
-
-// Rapid repeated input previously closed the jaws at y=40, before descent.
-// The same guard must cover direct button/keyboard actions and canvas taps.
-t.newRun();
-const rapidDrops=t.get().run.drops,rapidStartY=t.get().claw.y;
-els.get('#drop').onclick();els.get('#drop').onclick();
-assert.equal(t.get().phase,'down','double pressing Grab cannot close at the rail');
-assert.equal(t.get().claw.y,rapidStartY,'second input arrives before any descent frame');
-assert.equal(els.get('#drop').disabled,true,'Close Now stays unavailable during initial descent');
-assert.equal(els.get('#dropLabel').textContent,'LOWERING');
-for(let i=0;i<6;i++){
- t.drop();
- els.get('#machineCanvas').listeners.pointerdown({clientX:210,pointerId:7,preventDefault(){}});
- advance(.01);
- assert.equal(t.get().phase,'down','repeated button and canvas input cannot bypass descent');
+// Hammer every input throughout descent. No input can close before target depth.
+for(const dt of [1/120,1/30]){
+ t.newRun();const drops=t.get().run.drops,startY=t.get().claw.y;
+ els.get('#drop').onclick();els.get('#drop').onclick();
+ assert.equal(t.get().phase,'down');assert.equal(t.get().claw.y,startY);
+ let frames=0;
+ while(t.get().phase==='down'&&frames++<300){
+  t.drop();els.get('#drop').onclick();
+  els.get('#machineCanvas').listeners.pointerdown({clientX:210,pointerId:7,preventDefault(){}});
+  assert.equal(t.get().phase,'down','inputs never interrupt automatic lowering');
+  assert.equal(els.get('#drop').disabled,true);
+  t.update(dt);
+ }
+ assert.ok(frames<300,'automatic descent finishes');
+ assert.equal(t.get().phase,'close');
+ assert.equal(t.get().claw.y,t.get().claw.depth,'closure occurs only at the target depth');
+ assert.equal(t.get().run.drops,drops-1,'one full cycle consumes exactly one drop');
 }
-advance(.32);
-assert.ok(t.get().claw.y-rapidStartY>=70,'claw visibly descends before closure is armed');
-assert.equal(els.get('#drop').disabled,false,'Close Now arms after physical descent');
-assert.equal(els.get('#dropLabel').textContent,'CLOSE NOW');
-const armedY=t.get().claw.y;
-els.get('#machineCanvas').listeners.pointerdown({clientX:210,pointerId:8,preventDefault(){}});
-assert.equal(t.get().phase,'close','canvas depth control still works after descent');
-assert.equal(t.get().claw.y,armedY,'armed closure preserves the chosen depth');
-assert.equal(t.get().run.drops,rapidDrops-1,'repeated inputs consume only one drop');
+// Migrate saved early closures from old versions without charging a second drop.
+t.newRun();t.drop();t.setPhase('close');t.checkpoint();
+const snapshot=JSON.parse(JSON.stringify({run:t.get().run,claw:t.get().claw,balls:t.get().balls,phase:'close',phaseTime:.01}));
+const savedDrops=snapshot.run.drops;t.restore(snapshot);
+assert.equal(t.get().phase,'down','legacy closure at the rail resumes lowering');
+assert.equal(t.get().claw.open,1);assert.equal(t.get().run.drops,savedDrops);
 
 // Exercise the actual mobile pointer handlers. A tap only aims; dragging then
 // releasing queues exactly one drop after the carriage reaches that location.
@@ -88,4 +72,4 @@ t.newRun();const beforeCancel=t.get().run.drops;
 canvas.listeners.pointerdown(pointer(210));canvas.listeners.pointermove(pointer(285));canvas.listeners.pointercancel(pointer(285));canvas.listeners.pointerup(pointer(285));advance(.4);
 assert.equal(t.get().phase,'aim','cancelled dragging does not trigger a grab');
 assert.equal(t.get().run.drops,beforeCancel,'cancelled gesture does not consume a drop');
-t.render();console.log('Integration passed:',{edgeAndCenterCatches:catches,pause:true,upgradedClaw:true,emptyGrab:true,manualClose:true,minimumDescent:true,rapidInput:true,dragRelease:true,cancelledGesture:true});
+t.render();console.log('Integration passed:',{edgeAndCenterCatches:catches,pause:true,upgradedClaw:true,emptyGrab:true,automaticDescent:true,legacyCloseRecovery:true,rapidInput:true,dragRelease:true,cancelledGesture:true});

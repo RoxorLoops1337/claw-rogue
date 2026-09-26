@@ -13,7 +13,7 @@
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="preload" href="fonts/manrope-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="fonts/barlow-condensed-latin-700-normal.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="styles.css?v=20260926-2">
+  <link rel="stylesheet" href="styles.css?v=20260926-3">
 </head>
 <body>
 <div id="bootScreen" class="boot" role="status" aria-label="Loading Clawbound">
@@ -59,7 +59,7 @@
   </div>
   <section class="machine" aria-label="Claw machine">
     <div class="machine-top"><div class="machine-title"><i class="led" aria-hidden="true"></i>LOOT CHAMBER</div><div class="machine-stat"><b id="drops">6</b> DROPS LEFT</div></div>
-    <div class="glass"><canvas id="machineCanvas" aria-label="Claw playfield. Drag and release to grab. Tap Close Now during descent to choose depth."></canvas></div>
+    <div class="glass"><canvas id="machineCanvas" aria-label="Claw playfield. Drag and release to grab. The claw descends and closes automatically."></canvas></div>
     <div class="machine-foot"><span id="clawLabel">BRASS CLAW</span><div class="capacity" id="capacity" aria-label="Grip strength"></div><span id="load">0 IN SCOOP</span></div>
   </section>
   <div class="controls" role="group" aria-label="Claw controls">
@@ -78,12 +78,12 @@
   <div id="modalExtra"></div>
   <div class="choices" id="choices"></div>
 </dialog>
-<script src="physics.js?v=20260926-2"></script>
-<script src="progression.js?v=20260926-2"></script>
-<script src="art.js?v=20260926-2"></script>
-<script src="loot.js?v=20260926-2"></script>
-<script src="icons.js?v=20260926-2"></script>
-<script src="game.js?v=20260926-2"></script>
-<script>if ('serviceWorker' in navigator && !window.Capacitor?.isNativePlatform?.()) { window.addEventListener('load', () => navigator.serviceWorker.register('sw.js?v=20260926-2').catch(() => {})); }</script>
+<script src="physics.js?v=20260926-3"></script>
+<script src="progression.js?v=20260926-3"></script>
+<script src="art.js?v=20260926-3"></script>
+<script src="loot.js?v=20260926-3"></script>
+<script src="icons.js?v=20260926-3"></script>
+<script src="game.js?v=20260926-3"></script>
+<script>if ('serviceWorker' in navigator && !window.Capacitor?.isNativePlatform?.()) { window.addEventListener('load', () => navigator.serviceWorker.register('sw.js?v=20260926-3').catch(() => {})); }</script>
 </body>
 </html>
